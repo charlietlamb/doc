@@ -10,11 +10,7 @@ export const server = {
   NODE_ENV: z.enum(['development', 'production', 'test']),
 } as const
 
-const client = {
-  NEXT_PUBLIC_DOMAIN: z.string().min(1),
-  NEXT_PUBLIC_WEB: z.string().min(1).url(),
-  NEXT_PUBLIC_API: z.string().min(1).url(),
-}
+const client = {}
 
 export type EnvType = ReturnType<typeof createEnv<typeof server, typeof client>>
 
@@ -29,9 +25,5 @@ export const env = createEnv({
       process.env.NODE_ENV === 'undefined'
         ? 'development'
         : process.env.NODE_ENV,
-
-    NEXT_PUBLIC_DOMAIN: process.env.NEXT_PUBLIC_DOMAIN,
-    NEXT_PUBLIC_WEB: process.env.NEXT_PUBLIC_WEB,
-    NEXT_PUBLIC_API: process.env.NEXT_PUBLIC_API,
   },
 })
