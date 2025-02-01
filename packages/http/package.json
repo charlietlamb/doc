@@ -1,0 +1,12 @@
+{
+  "name": "@doc/http",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "stoker": "^1.4.2"
+  }
+}

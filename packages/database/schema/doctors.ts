@@ -14,3 +14,11 @@ export const doctors = pgTable('doctors', {
 export const selectDoctorSchema = createSelectSchema(doctors)
 export const insertDoctorSchema = createInsertSchema(doctors)
 export type Doctor = typeof doctors.$inferSelect
+
+export const doctorFormSchema = insertDoctorSchema.omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+})
+
+export type DoctorForm = typeof doctorFormSchema
