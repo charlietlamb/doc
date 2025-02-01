@@ -1,11 +1,13 @@
 import { timestamp, pgTable, text } from 'drizzle-orm/pg-core'
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod'
 import { z } from 'zod'
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 import { slots } from './slots'
 
 export const doctors = pgTable('doctors', {
-  id: text('id').primaryKey(),
+  id: text('id')
+    .primaryKey()
+    .default(sql`gen_random_uuid()`),
   username: text('username').notNull().unique(),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),

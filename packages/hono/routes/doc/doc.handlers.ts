@@ -17,6 +17,7 @@ export const create: AppRouteHandler<CreateDoctorRoute> = async (c) => {
     await db.insert(doctors).values(doctor)
     return c.json({ success: true }, HttpStatusCodes.OK)
   } catch (error) {
+    console.error(error)
     return c.json(
       { error: 'Failed to create business' },
       HttpStatusCodes.INTERNAL_SERVER_ERROR
