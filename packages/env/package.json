@@ -1,12 +1,13 @@
 {
-  "name": "@doc/database",
+  "name": "@doc/env",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "type": "module",
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.10.4"
+    "@t3-oss/env-nextjs": "^0.12.0"
   }
 }
