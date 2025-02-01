@@ -1,9 +1,11 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { HttpStatusCodes } from '@doc/http'
-import { jsonContent } from 'stoker/openapi/helpers'
-import { unauthorizedSchema } from '@acaci/hono/lib/configure/configure-auth'
+import { doctorFormSchema } from '@doc/database/schema/doctors'
 
-const tags = ['Courses']
+const tags = ['Doctors']
+
+const successResponse = z.object({ success: z.boolean() })
+const errorResponse = z.object({ error: z.string() })
 
 export const create = createRoute({
   path: '/doctors',
@@ -11,23 +13,34 @@ export const create = createRoute({
   summary: 'Create a doctor',
   tags,
   request: {
-    body: jsonContent(
-      z.object({
-        title: z.string().min(1, 'Title is required'),
-      }),
-      'Doctor form.'
-    ),
+    body: {
+      content: {
+        'application/json': {
+          schema: doctorFormSchema,
+        },
+      },
+      description: 'Doctor form.',
+      required: true,
+    },
   },
   responses: {
-    [HttpStatusCodes.OK]: jsonContent(selectDoctorSchema, 'Doctor created.'),
-    [HttpStatusCodes.INTERNAL_SERVER_ERROR]: jsonContent(
-      z.object({
-        error: z.string(),
-      }),
-      'Failed to create business.'
-    ),
-    ...unauthorizedSchema,
+    [HttpStatusCodes.OK]: {
+      content: {
+        'application/json': {
+          schema: successResponse,
+        },
+      },
+      description: 'Doctor created.',
+    },
+    [HttpStatusCodes.INTERNAL_SERVER_ERROR]: {
+      content: {
+        'application/json': {
+          schema: errorResponse,
+        },
+      },
+      description: 'Failed to create doctor.',
+    },
   },
 })
 
-export type CreateCourseRoute = typeof create
+export type CreateDoctorRoute = typeof create
