@@ -18,6 +18,7 @@ import { createDoctor } from '@doc/design-system/actions/doctors/create-doctor'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Spinner from '../misc/spinner'
+import { useToast } from '@doc/design-system/hooks/use-toast'
 
 export default function CreateDoctor() {
   const form = useForm<DoctorForm>({
@@ -28,13 +29,31 @@ export default function CreateDoctor() {
       lastName: '',
       email: '',
     },
+    mode: 'onChange',
   })
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { toast } = useToast()
 
   async function onSubmit(data: DoctorForm) {
-    const response = await createDoctor(data)
-    router.refresh()
+    try {
+      setLoading(true)
+      const response = await createDoctor(data)
+      toast({
+        title: 'Success',
+        description: 'Doctor created successfully',
+      })
+      router.refresh()
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description:
+          error instanceof Error ? error.message : 'Failed to create doctor',
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -87,7 +106,7 @@ export default function CreateDoctor() {
               type="submit"
               className="w-full"
               variant="shine"
-              disabled={loading}
+              disabled={loading || !form.formState.isValid}
             >
               {loading ? <Spinner /> : 'Create Doctor'}
             </Button>
