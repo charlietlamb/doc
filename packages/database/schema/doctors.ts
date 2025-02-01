@@ -1,5 +1,6 @@
 import { timestamp, pgTable, text } from 'drizzle-orm/pg-core'
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod'
+import { z } from 'zod'
 
 export const doctors = pgTable('doctors', {
   id: text('id').primaryKey(),
@@ -15,10 +16,11 @@ export const selectDoctorSchema = createSelectSchema(doctors)
 export const insertDoctorSchema = createInsertSchema(doctors)
 export type Doctor = typeof doctors.$inferSelect
 
-export const doctorFormSchema = insertDoctorSchema.omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
+export const doctorFormSchema = selectDoctorSchema.pick({
+  username: true,
+  firstName: true,
+  lastName: true,
+  email: true,
 })
 
-export type DoctorForm = typeof doctorFormSchema
+export type DoctorForm = z.infer<typeof doctorFormSchema>
