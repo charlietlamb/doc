@@ -5,7 +5,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
 import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn } from '@acaci/design-system/lib/utils'
+import { cn } from '@doc/design-system/lib/utils'
 
 const Dialog = DialogPrimitive.Root
 

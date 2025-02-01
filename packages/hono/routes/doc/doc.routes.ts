@@ -1,6 +1,9 @@
 import { createRoute, z } from '@hono/zod-openapi'
 import { HttpStatusCodes } from '@doc/http'
-import { doctorFormSchema } from '@doc/database/schema/doctors'
+import {
+  doctorFormSchema,
+  selectDoctorSchema,
+} from '@doc/database/schema/doctors'
 import {
   selectSlotSchema,
   slotFormSchema,
@@ -49,6 +52,33 @@ export const create = createRoute({
 })
 
 export type CreateDoctorRoute = typeof create
+
+export const getDoctors = createRoute({
+  path: '/doctors',
+  method: 'get',
+  summary: 'Get doctors',
+  tags,
+  responses: {
+    [HttpStatusCodes.OK]: {
+      content: {
+        'application/json': {
+          schema: z.array(selectDoctorSchema),
+        },
+      },
+      description: 'Doctors.',
+    },
+    [HttpStatusCodes.INTERNAL_SERVER_ERROR]: {
+      content: {
+        'application/json': {
+          schema: errorResponse,
+        },
+      },
+      description: 'Failed to get doctors.',
+    },
+  },
+})
+
+export type GetDoctorsRoute = typeof getDoctors
 
 export const getBookedSlots = createRoute({
   path: '/doctors/:doctorId/booked-slots',

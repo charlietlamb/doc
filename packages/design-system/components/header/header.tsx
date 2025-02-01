@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { HeaderTheme } from './header-theme'
+
 export default function Header() {
   return (
     <div className="p-4 flex justify-between items-center border-b">
@@ -8,6 +10,7 @@ export default function Header() {
       <div className="flex items-center gap-2">
         <Link href="/">Home</Link>
         <Link href="/">Slots</Link>
+        <HeaderTheme />
       </div>
     </div>
   )

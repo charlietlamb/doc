@@ -3,6 +3,7 @@ import {
   CreateDoctorRoute,
   GetBookedSlotsRoute,
   GetAvailableSlotsRoute,
+  GetDoctorsRoute,
 } from '@doc/hono/routes/doc/doc.routes'
 import { AppRouteHandler } from '@doc/hono/lib/types'
 import { doctors } from '@doc/database/schema/doctors'
@@ -18,6 +19,18 @@ export const create: AppRouteHandler<CreateDoctorRoute> = async (c) => {
   } catch (error) {
     return c.json(
       { error: 'Failed to create business' },
+      HttpStatusCodes.INTERNAL_SERVER_ERROR
+    )
+  }
+}
+
+export const getDoctors: AppRouteHandler<GetDoctorsRoute> = async (c) => {
+  try {
+    const selectedDoctors = await db.select().from(doctors)
+    return c.json(selectedDoctors, HttpStatusCodes.OK)
+  } catch (error) {
+    return c.json(
+      { error: 'Failed to get doctors' },
       HttpStatusCodes.INTERNAL_SERVER_ERROR
     )
   }

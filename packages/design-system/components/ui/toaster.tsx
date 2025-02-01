@@ -1,6 +1,6 @@
 'use client'
 
-import { useToast } from '@acaci/design-system/hooks/use-toast'
+import { useToast } from '@doc/design-system/hooks/use-toast'
 import {
   Toast,
   ToastClose,
@@ -8,7 +8,7 @@ import {
   ToastProvider,
   ToastTitle,
   ToastViewport,
-} from '@acaci/design-system/components/ui/toast'
+} from '@doc/design-system/components/ui/toast'
 
 export function Toaster() {
   const { toasts } = useToast()

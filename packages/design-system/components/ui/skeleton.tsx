@@ -1,4 +1,4 @@
-import { cn } from '@acaci/design-system/lib/utils'
+import { cn } from '@doc/design-system/lib/utils'
 
 function Skeleton({
   className,

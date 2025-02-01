@@ -12,14 +12,14 @@ import {
   useFormContext,
 } from 'react-hook-form'
 
-import { cn } from '@acaci/design-system/lib/utils'
-import { Label } from '@acaci/design-system/components/ui/label'
+import { cn } from '@doc/design-system/lib/utils'
+import { Label } from '@doc/design-system/components/ui/label'
 
 const Form = FormProvider
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   name: TName
 }
@@ -30,7 +30,7 @@ const FormFieldContext = React.createContext<FormFieldContextValue>(
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   ...props
 }: ControllerProps<TFieldValues, TName>) => {
