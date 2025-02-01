@@ -44,3 +44,30 @@ export const create = createRoute({
 })
 
 export type CreateSlotRoute = typeof create
+
+export const book = createRoute({
+  path: '/slots/:slotId/book',
+  method: 'post',
+  summary: 'Book a slot',
+  tags,
+  responses: {
+    [HttpStatusCodes.OK]: {
+      content: {
+        'application/json': {
+          schema: successResponse,
+        },
+      },
+      description: 'Slot booked.',
+    },
+    [HttpStatusCodes.INTERNAL_SERVER_ERROR]: {
+      content: {
+        'application/json': {
+          schema: errorResponse,
+        },
+      },
+      description: 'Failed to book slot.',
+    },
+  },
+})
+
+export type BookSlotRoute = typeof book
