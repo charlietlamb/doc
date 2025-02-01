@@ -33,7 +33,6 @@ export const slotFormSchema = selectSlotSchema.pick({
   doctorId: true,
   startTime: true,
   endTime: true,
-  status: true,
 })
 
 export type SlotForm = z.infer<typeof slotFormSchema>
