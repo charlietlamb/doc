@@ -3,9 +3,9 @@ import doc from '@doc/hono/routes/doc/doc.index'
 import slots from '@doc/hono/routes/slots/slots.index'
 import configure from '@doc/hono/lib/configure'
 
-const app = createApp()
-
+const app = createApp().basePath('/api')
 configure(app)
+
 const routes = [doc, slots] as const
 
 routes.forEach((route) => {

@@ -1,10 +1,11 @@
+import { env } from '@doc/env'
 import { AppOpenAPI } from '@doc/hono/lib/types'
 import { cors } from 'hono/cors'
 
 export default function configureCors(app: AppOpenAPI) {
   app.use('*', async (c, next) => {
     const corsMiddlewareHandler = cors({
-      origin: [c.env.NEXT_PUBLIC_WEB, c.env.NEXT_PUBLIC_API],
+      origin: [env.NEXT_PUBLIC_DOMAIN],
       allowHeaders: [
         'Access-Control-Allow-Origin',
         'Content-Type',
