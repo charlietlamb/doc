@@ -35,7 +35,7 @@ export const create = createRoute({
     [HttpStatusCodes.OK]: {
       content: {
         'application/json': {
-          schema: successResponse,
+          schema: selectDoctorSchema,
         },
       },
       description: 'Doctor created.',

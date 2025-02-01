@@ -34,7 +34,7 @@ export function Doctors({ doctors }: DoctorsProps) {
   return (
     <Card className="w-full p-4">
       <CardHeader>
-        <CardTitle>Doctors</CardTitle>
+        <CardTitle className="font-heading">Doctors</CardTitle>
         <CardDescription>View and manage all doctors</CardDescription>
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -61,7 +61,7 @@ export function Doctors({ doctors }: DoctorsProps) {
                   <AvatarFallback>{`${doctor.firstName[0]}${doctor.lastName[0]}`}</AvatarFallback>
                 </Avatar>
                 <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none">
+                  <p className="text-sm font-medium leading-none font-heading">
                     {doctor.firstName} {doctor.lastName}
                   </p>
                   <p className="text-sm text-muted-foreground">
