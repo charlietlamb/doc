@@ -32,7 +32,7 @@ export function Doctors() {
   })
 
   return (
-    <Card className="w-full p-4 border-none">
+    <Card className="w-full border-none px-4">
       <CardHeader className="flex flex-row justify-between items-center">
         <div>
           <CardTitle className="font-heading">Doctors</CardTitle>
