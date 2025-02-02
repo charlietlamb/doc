@@ -1,4 +1,4 @@
-import { timestamp, pgTable, text } from 'drizzle-orm/pg-core'
+import { timestamp, pgTable, text, index } from 'drizzle-orm/pg-core'
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { relations, sql } from 'drizzle-orm'

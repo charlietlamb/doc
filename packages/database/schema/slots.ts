@@ -1,26 +1,33 @@
-import { timestamp, pgTable, text } from 'drizzle-orm/pg-core'
+import { timestamp, pgTable, text, index } from 'drizzle-orm/pg-core'
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { doctors } from './doctors'
 import { relations, sql } from 'drizzle-orm'
 import { recurrenceRules } from './recurrence-rules'
 
-export const slots = pgTable('slots', {
-  id: text('id')
-    .primaryKey()
-    .default(sql`gen_random_uuid()`),
-  doctorId: text('doctor_id').notNull(),
-  startTime: timestamp('start_time').notNull(),
-  endTime: timestamp('end_time').notNull(),
-  status: text('status', { enum: ['available', 'booked'] })
-    .default('available')
-    .notNull(),
-  recurrenceRuleId: text('recurrence_rule_id').references(
-    () => recurrenceRules.id
-  ),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
+export const slots = pgTable(
+  'slots',
+  {
+    id: text('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
+    doctorId: text('doctor_id').notNull(),
+    startTime: timestamp('start_time').notNull(),
+    endTime: timestamp('end_time').notNull(),
+    status: text('status', { enum: ['available', 'booked'] })
+      .default('available')
+      .notNull(),
+    recurrenceRuleId: text('recurrence_rule_id').references(
+      () => recurrenceRules.id
+    ),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    doctorIdIdx: index('doctor_id_idx').on(table.doctorId),
+    timeRangeIdx: index('time_range_idx').on(table.startTime, table.endTime),
+  })
+)
 
 export const slotsRelations = relations(slots, ({ one }) => ({
   doctor: one(doctors, {

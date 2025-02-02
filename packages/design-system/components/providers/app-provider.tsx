@@ -109,17 +109,26 @@ export default function AppProvider({
         recurrenceRuleId: rule.id,
       })) || []),
     ] as (Slot & { isRecurrence: boolean })[]
-    const sortedAvailableSlots = combinedAvailableSlots.sort(
-      (a, b) => a.startTime.getTime() - b.startTime.getTime()
-    )
+    const sortedAvailableSlots = combinedAvailableSlots?.sort((a, b) => {
+      const aTime =
+        a.startTime instanceof Date ? a.startTime : new Date(a.startTime)
+      const bTime =
+        b.startTime instanceof Date ? b.startTime : new Date(b.startTime)
+      return aTime.getTime() - bTime.getTime()
+    })
     setAvailableSlots(sortedAvailableSlots || [])
   }, [bookedSlots, availableSlots, recurrenceRules, date])
 
   useEffect(() => {
     if (fetchedDoctors) {
-      setDoctors(fetchedDoctors)
+      const doctorsWithDates = fetchedDoctors.map((doctor) => ({
+        ...doctor,
+        createdAt: new Date(doctor.createdAt),
+        updatedAt: new Date(doctor.updatedAt),
+      }))
+      setDoctors(doctorsWithDates)
       if (!doctor) {
-        setDoctor(fetchedDoctors[0])
+        setDoctor(doctorsWithDates[0])
       }
     }
   }, [fetchedDoctors])

@@ -1,20 +1,27 @@
-import { timestamp, pgTable, text } from 'drizzle-orm/pg-core'
+import { timestamp, pgTable, text, index } from 'drizzle-orm/pg-core'
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { slots } from './slots'
 import { relations } from 'drizzle-orm'
 
-export const bookings = pgTable('bookings', {
-  id: text('id').primaryKey(),
-  slotId: text('slot_id')
-    .notNull()
-    .references(() => slots.id),
-  patientId: text('patient_id').notNull(),
-  reason: text('reason').notNull(),
-  bookingTime: timestamp('booking_time').notNull().defaultNow(),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-})
+export const bookings = pgTable(
+  'bookings',
+  {
+    id: text('id').primaryKey(),
+    slotId: text('slot_id')
+      .notNull()
+      .references(() => slots.id),
+    patientId: text('patient_id').notNull(),
+    reason: text('reason').notNull(),
+    bookingTime: timestamp('booking_time').notNull().defaultNow(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (table) => ({
+    slotIdIdx: index('slot_id_idx').on(table.slotId),
+    patientIdIdx: index('patient_id_idx').on(table.patientId),
+  })
+)
 
 export const bookingsRelations = relations(bookings, ({ one }) => ({
   slot: one(slots, {

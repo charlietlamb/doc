@@ -18,7 +18,7 @@ export function HeaderTheme() {
           {resolvedTheme === 'light' ? <Sun /> : <Moon />}
         </div>
       </PopoverTrigger>
-      <PopoverContent>
+      <PopoverContent asChild>
         <Theme />
       </PopoverContent>
     </Popover>
