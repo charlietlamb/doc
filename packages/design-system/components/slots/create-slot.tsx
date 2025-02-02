@@ -24,7 +24,10 @@ import { endOfDay, differenceInMinutes } from 'date-fns'
 import { z } from 'zod'
 import RequiredLabel from '../form/required-label'
 import { useAtomValue } from 'jotai'
-import { doctorAtom } from '@doc/design-system/atoms/doctor/doctor-atoms'
+import {
+  dateAtom,
+  doctorAtom,
+} from '@doc/design-system/atoms/doctor/doctor-atoms'
 
 const recurrenceSchema = z.object({
   recurrenceType: z.enum(['once', 'daily', 'weekly']),
@@ -59,10 +62,11 @@ function calculateMaxSlots(startTime: Date, duration: number): number {
   return Math.floor(availableMinutes / duration)
 }
 
-export function CreateSlot({ selectedDate }: { selectedDate: Date }) {
+export function CreateSlot() {
   const [isLoading, setIsLoading] = useState(false)
   const [maxSlots, setMaxSlots] = useState(1)
   const doctor = useAtomValue(doctorAtom)
+  const selectedDate = useAtomValue(dateAtom)
 
   const initialDate = selectedDate || new Date()
   const initialTime = roundToNext15Minutes(initialDate)
@@ -85,7 +89,7 @@ export function CreateSlot({ selectedDate }: { selectedDate: Date }) {
       time: initialTime,
       duration: 30,
       numberOfSlots: 1,
-      doctorId,
+      doctorId: doctor?.id,
       recurrence: {
         recurrenceType: 'once',
         weekdays: 0,
@@ -99,7 +103,11 @@ export function CreateSlot({ selectedDate }: { selectedDate: Date }) {
 
   useEffect(() => {
     form.setValue('doctorId', doctor?.id ?? '')
-  }, [doctor])
+  }, [doctor, form])
+
+  useEffect(() => {
+    form.setValue('date', selectedDate ?? new Date())
+  }, [selectedDate, form])
 
   useEffect(() => {
     const newMaxSlots = calculateMaxSlots(new Date(date), duration)
@@ -111,11 +119,6 @@ export function CreateSlot({ selectedDate }: { selectedDate: Date }) {
     }
   }, [date, duration, form])
 
-  // Add effect to update doctorId in form when prop changes
-  useEffect(() => {
-    form.setValue('doctorId', doctorId)
-  }, [doctorId, form])
-
   const onSubmit = async (data: FormData) => {
     console.log('=== Form Submission Debug Logs ===')
     console.log('Raw form data:', {
@@ -126,7 +129,7 @@ export function CreateSlot({ selectedDate }: { selectedDate: Date }) {
     })
 
     try {
-      if (!doctorId) {
+      if (!doctor?.id) {
         console.log('Submission blocked: Missing doctor ID')
         toast.error('Please select a doctor first')
         return
@@ -169,7 +172,7 @@ export function CreateSlot({ selectedDate }: { selectedDate: Date }) {
 
         return {
           ...data,
-          doctorId,
+          doctorId: doctor?.id,
           startTime: slotStartTime,
           endTime: slotEndTime,
         }
@@ -275,13 +278,6 @@ export function CreateSlot({ selectedDate }: { selectedDate: Date }) {
         }}
       >
         <div className="grid grid-cols-2 gap-4">
-          <DatePicker
-            control={form.control}
-            name="date"
-            label="Date"
-            required
-            className="col-span-2"
-          />
           <TimePicker
             control={form.control}
             name="time"

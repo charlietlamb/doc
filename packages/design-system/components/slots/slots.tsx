@@ -11,24 +11,18 @@ import {
   CardTitle,
   CardDescription,
 } from '@doc/design-system/components/ui/card'
-import { useForm } from 'react-hook-form'
-
-interface DateForm {
-  selectedDate: Date
-}
+import DatePickerJotai from '../form/date-picker-jotai'
 
 export default function Slots() {
-  const form = useForm<DateForm>({
-    defaultValues: {
-      selectedDate: new Date(),
-    },
-  })
-
-  const selectedDate = form.watch('selectedDate')
-
   return (
     <div className="container mx-auto p-6 space-y-8">
       <DoctorSelect />
+      <DatePickerJotai
+        name="date"
+        label="Date"
+        required
+        className="col-span-2"
+      />
       <div className="grid lg:grid-cols-2 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -39,7 +33,7 @@ export default function Slots() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <CreateSlot selectedDate={selectedDate} />
+              <CreateSlot />
             </div>
           </CardContent>
         </Card>
