@@ -20,7 +20,7 @@ export const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
-        heading: ['var(--font-geist-mono)'],
+        heading: ['var(--font-outfit)'],
       },
       colors: {
         background: 'hsl(var(--background))',

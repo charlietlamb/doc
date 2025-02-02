@@ -15,6 +15,8 @@ import { Avatar } from '../ui/avatar'
 import { AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
 import { useAtomValue } from 'jotai'
 import { doctorsAtom } from '@doc/design-system/atoms/doctor/doctor-atoms'
+import { Button } from '../ui/button'
+import CreateDoctorDialog from './create-doctor-dialog'
 
 export function Doctors() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -30,10 +32,17 @@ export function Doctors() {
   })
 
   return (
-    <Card className="w-full p-4">
-      <CardHeader>
-        <CardTitle className="font-heading">Doctors</CardTitle>
-        <CardDescription>View and manage all doctors</CardDescription>
+    <Card className="w-full p-4 border-none">
+      <CardHeader className="flex flex-row justify-between items-center">
+        <div>
+          <CardTitle className="font-heading">Doctors</CardTitle>
+          <CardDescription>View and manage all doctors</CardDescription>
+        </div>
+        <CreateDoctorDialog>
+          <Button variant="shine">Add Doctor</Button>
+        </CreateDoctorDialog>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -43,9 +52,7 @@ export function Doctors() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[600px] pr-4">
+        <ScrollArea className="h-[600px]">
           <div className="grid gap-4">
             {filteredDoctors.map((doctor) => (
               <Card
