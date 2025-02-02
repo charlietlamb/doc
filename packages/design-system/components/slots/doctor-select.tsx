@@ -16,7 +16,7 @@ interface DoctorSelectProps {
 export function DoctorSelect({ doctors, onSelect, value }: DoctorSelectProps) {
   return (
     <Select onValueChange={onSelect} value={value}>
-      <SelectTrigger className="w-[280px]">
+      <SelectTrigger className="w-full">
         <SelectValue placeholder="Select a doctor" />
       </SelectTrigger>
       <SelectContent>

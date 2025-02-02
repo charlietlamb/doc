@@ -8,7 +8,7 @@ import { Button } from '@doc/design-system/components/ui/button'
 import { toast } from 'sonner'
 import { bookSlot } from '@doc/design-system/actions/slots/book-slot'
 import { format } from 'date-fns'
-
+import { useRouter } from 'next/navigation'
 interface AvailableSlotsProps {
   doctorId?: string
   date: string
@@ -18,7 +18,7 @@ export function AvailableSlots({ doctorId, date }: AvailableSlotsProps) {
   const [slots, setSlots] = useState<Slot[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [bookingId, setBookingId] = useState<string>()
-
+  const router = useRouter()
   useEffect(() => {
     async function fetchSlots() {
       if (!doctorId) return
@@ -60,6 +60,7 @@ export function AvailableSlots({ doctorId, date }: AvailableSlotsProps) {
           endTime: new Date(slot.endTime),
         }))
       )
+      router.refresh()
     } catch (error) {
       toast.error('Failed to book slot')
     } finally {

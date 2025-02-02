@@ -4,15 +4,10 @@ import {
   doctorFormSchema,
   selectDoctorSchema,
 } from '@doc/database/schema/doctors'
-import {
-  selectSlotSchema,
-  slotFormSchema,
-  slots,
-} from '@doc/database/schema/slots'
+import { selectSlotSchema } from '@doc/database/schema/slots'
 
 const tags = ['Doctors']
 
-const successResponse = z.object({ success: z.boolean() })
 const errorResponse = z.object({ error: z.string() })
 
 export const create = createRoute({
@@ -81,7 +76,7 @@ export const getDoctors = createRoute({
 export type GetDoctorsRoute = typeof getDoctors
 
 export const getBookedSlots = createRoute({
-  path: '/doctors/:doctorId/booked-slots',
+  path: '/doctors/:doctorId/bookings',
   method: 'get',
   summary: 'Get booked slots',
   tags,

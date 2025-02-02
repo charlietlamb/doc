@@ -66,7 +66,7 @@ export function BookedSlots({ doctorId, date }: BookedSlotsProps) {
   }
 
   return (
-    <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+    <ScrollArea className="h-[300px] w-full">
       <div className="space-y-4">
         {slots.map((slot) => (
           <div

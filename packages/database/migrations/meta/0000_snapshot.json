@@ -1,5 +1,5 @@
 {
-  "id": "beb1fcf9-86a8-4777-8d24-be0ea1a7f686",
+  "id": "8ca30997-e7be-47b1-98be-463d9a336792",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -84,7 +84,8 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "username": {
           "name": "username",
@@ -156,7 +157,8 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "doctor_id": {
           "name": "doctor_id",

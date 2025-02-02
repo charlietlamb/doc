@@ -16,6 +16,10 @@ import {
 } from '@doc/design-system/components/ui/card'
 import { useForm } from 'react-hook-form'
 import { format } from 'date-fns'
+import { Form } from '@doc/design-system/components/ui/form'
+import DatePicker from '@doc/design-system/components/form/date-picker'
+import { toast } from 'sonner'
+import { Button } from '@doc/design-system/components/ui/button'
 
 export interface SlotsPageProps {
   doctors: Doctor[]
@@ -36,26 +40,37 @@ export default function Slots({ doctors, initialSlots }: SlotsPageProps) {
 
   const selectedDate = form.watch('selectedDate')
 
+  async function onSubmit(data: DateForm) {
+    if (!selectedDoctor) {
+      toast.error('Please select a doctor first')
+      return
+    }
+    toast.success(`Date updated to ${format(data.selectedDate, 'PPP')}`)
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-8">
-      <div className="w-full">
-        <DoctorSelect
-          doctors={doctors}
-          onSelect={setSelectedDoctor}
-          value={selectedDoctor}
-        />
-      </div>
+      <DoctorSelect
+        doctors={doctors}
+        onSelect={setSelectedDoctor}
+        value={selectedDoctor}
+      />
 
       <div className="grid lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="font-heading">Create Slot</CardTitle>
+            <CardTitle className="font-heading">Create Slots</CardTitle>
             <CardDescription>
-              Create new appointment slots for patients
+              Create new appointment slots with recurrence options
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <CreateSlot doctorId={selectedDoctor} />
+            <div className="space-y-4">
+              <CreateSlot
+                doctorId={selectedDoctor}
+                selectedDate={selectedDate}
+              />
+            </div>
           </CardContent>
         </Card>
 
@@ -74,7 +89,7 @@ export default function Slots({ doctors, initialSlots }: SlotsPageProps) {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card>
           <CardHeader>
             <CardTitle className="font-heading">Booked Slots</CardTitle>
             <CardDescription>View all confirmed appointments</CardDescription>

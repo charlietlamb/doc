@@ -14,7 +14,7 @@ import { slots } from '@doc/database/schema/slots'
 export const create: AppRouteHandler<CreateDoctorRoute> = async (c) => {
   const doctor = await c.req.json()
   try {
-    const selectedDoctor = await db.insert(doctors).values(doctor).returning()
+    const [selectedDoctor] = await db.insert(doctors).values(doctor).returning()
     return c.json(selectedDoctor, HttpStatusCodes.OK)
   } catch (error) {
     console.error(error)

@@ -23,6 +23,28 @@ import {
   FormMessage,
 } from '@doc/design-system/components/ui/form'
 
+function roundToNext15Minutes(date: Date): Date {
+  const roundedDate = new Date(date)
+  const minutes = date.getMinutes()
+  const hours = date.getHours()
+
+  // Round up to the next 15 minute interval
+  const intervalSize = 15
+  const roundedMinutes = Math.ceil(minutes / intervalSize) * intervalSize
+
+  if (roundedMinutes === 60) {
+    roundedDate.setHours(hours + 1)
+    roundedDate.setMinutes(0)
+  } else {
+    roundedDate.setMinutes(roundedMinutes)
+  }
+
+  roundedDate.setSeconds(0)
+  roundedDate.setMilliseconds(0)
+
+  return roundedDate
+}
+
 interface DateTimePickerProps {
   control: Control<any>
   name: string
@@ -101,7 +123,8 @@ export default function DateTimePicker({
                               className="sm:w-full shrink-0 aspect-square"
                               onClick={() => {
                                 const newDate = new Date(
-                                  field.value || new Date()
+                                  field.value ||
+                                    roundToNext15Minutes(new Date())
                                 )
                                 newDate.setHours(hour)
                                 field.onChange(newDate)
@@ -118,7 +141,7 @@ export default function DateTimePicker({
                     </ScrollArea>
                     <ScrollArea className="sm:w-auto w-64">
                       <div className="sm:flex-col flex p-2">
-                        {Array.from({ length: 12 }, (_, i) => i * 5).map(
+                        {Array.from({ length: 4 }, (_, i) => i * 15).map(
                           (minute) => (
                             <Button
                               key={minute}
@@ -132,7 +155,8 @@ export default function DateTimePicker({
                               className="sm:w-full shrink-0 aspect-square"
                               onClick={() => {
                                 const newDate = new Date(
-                                  field.value || new Date()
+                                  field.value ||
+                                    roundToNext15Minutes(new Date())
                                 )
                                 newDate.setMinutes(minute)
                                 field.onChange(newDate)
