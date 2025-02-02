@@ -8,7 +8,8 @@ import { Button } from '@doc/design-system/components/ui/button'
 import { Form, FormField } from '@doc/design-system/components/ui/form'
 import { toast } from 'sonner'
 import { createSlot } from '@doc/design-system/actions/slots/create-slot'
-import DateTimePicker from '@doc/design-system/components/form/date-time-picker'
+import DatePicker from '@doc/design-system/components/form/date-picker'
+import TimePicker from '@doc/design-system/components/form/time-picker'
 import Spinner from '../misc/spinner'
 import {
   Select,
@@ -31,8 +32,8 @@ const recurrenceSchema = z.object({
 })
 
 interface FormData {
-  startTime: Date
-  endTime: Date
+  date: Date
+  time: Date
   doctorId?: string
   duration: 15 | 30
   numberOfSlots: number
@@ -66,12 +67,14 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [maxSlots, setMaxSlots] = useState(1)
 
-  const initialStartTime = roundToNext15Minutes(selectedDate || new Date())
-  const initialEndTime = addMinutes(initialStartTime, 30)
+  const initialDate = selectedDate || new Date()
+  const initialTime = roundToNext15Minutes(initialDate)
 
   const form = useForm<FormData>({
     resolver: zodResolver(
       slotFormSchema.extend({
+        date: z.date(),
+        time: z.date(),
         duration: z.number().refine((val) => val === 15 || val === 30, {
           message: 'Duration must be either 15 or 30 minutes',
         }),
@@ -80,8 +83,8 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
       })
     ),
     defaultValues: {
-      startTime: initialStartTime,
-      endTime: initialEndTime,
+      date: initialDate,
+      time: initialTime,
       doctorId: doctorId,
       duration: 30,
       numberOfSlots: 1,
@@ -98,17 +101,18 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
 
   const recurrence = form.watch('recurrence')
   const duration = form.watch('duration')
-  const startTime = form.watch('startTime')
+  const date = form.watch('date')
+  const time = form.watch('time')
 
   useEffect(() => {
-    const newMaxSlots = calculateMaxSlots(startTime, duration)
+    const newMaxSlots = calculateMaxSlots(new Date(date), duration)
     setMaxSlots(newMaxSlots)
     // If current selected slots is more than new max, update it
     const currentSlots = form.getValues('numberOfSlots')
     if (currentSlots > newMaxSlots) {
       form.setValue('numberOfSlots', newMaxSlots)
     }
-  }, [startTime, duration, form])
+  }, [date, duration, form])
 
   const onSubmit = async (data: FormData) => {
     console.log('Form submitted with data:', data)
@@ -119,8 +123,12 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
       }
       setIsLoading(true)
 
+      const startTime = new Date(data.date)
+      startTime.setHours(data.time.getHours())
+      startTime.setMinutes(data.time.getMinutes())
+
       const slots = Array.from({ length: data.numberOfSlots }, (_, index) => {
-        const slotStartTime = addMinutes(data.startTime, index * data.duration)
+        const slotStartTime = addMinutes(startTime, index * data.duration)
         const slotEndTime = addMinutes(slotStartTime, data.duration)
         return {
           ...data,
@@ -154,8 +162,8 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
           `${createdCount} slot${createdCount > 1 ? 's' : ''} created successfully`
         )
         form.reset({
-          startTime: roundToNext15Minutes(new Date()),
-          endTime: addMinutes(roundToNext15Minutes(new Date()), 30),
+          date: new Date(),
+          time: roundToNext15Minutes(new Date()),
           doctorId: doctorId,
           duration: 30,
           numberOfSlots: 1,
@@ -189,12 +197,19 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <DateTimePicker
+          <DatePicker
             control={form.control}
-            name="startTime"
-            label="Start Time"
+            name="date"
+            label="Date"
             required
-            className="md:col-span-2"
+            className="col-span-2"
+          />
+          <TimePicker
+            control={form.control}
+            name="time"
+            label="Time"
+            required
+            className="col-span-2"
           />
 
           <div className="space-y-4">

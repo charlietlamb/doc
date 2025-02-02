@@ -9,24 +9,43 @@ import { toast } from 'sonner'
 import { bookSlot } from '@doc/design-system/actions/slots/book-slot'
 import { format } from 'date-fns'
 import { useRouter } from 'next/navigation'
+import DatePicker from '@doc/design-system/components/form/date-picker'
+import { useForm } from 'react-hook-form'
+import { Form } from '@doc/design-system/components/ui/form'
+
 interface AvailableSlotsProps {
   doctorId?: string
-  date: string
 }
 
-export function AvailableSlots({ doctorId, date }: AvailableSlotsProps) {
+interface FormData {
+  date: Date
+}
+
+export function AvailableSlots({ doctorId }: AvailableSlotsProps) {
   const [slots, setSlots] = useState<Slot[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [bookingId, setBookingId] = useState<string>()
   const router = useRouter()
+
+  const form = useForm<FormData>({
+    defaultValues: {
+      date: new Date(),
+    },
+  })
+
+  const selectedDate = form.watch('date')
+
   useEffect(() => {
     async function fetchSlots() {
       if (!doctorId) return
       setIsLoading(true)
       try {
-        const data = await getAvailableSlots(doctorId, date)
+        const data = await getAvailableSlots(
+          doctorId,
+          format(selectedDate, 'yyyy-MM-dd')
+        )
         setSlots(
-          data.map((slot) => ({
+          data.map((slot: Slot) => ({
             ...slot,
             createdAt: new Date(slot.createdAt),
             updatedAt: new Date(slot.updatedAt),
@@ -42,7 +61,7 @@ export function AvailableSlots({ doctorId, date }: AvailableSlotsProps) {
     }
 
     fetchSlots()
-  }, [doctorId, date])
+  }, [doctorId, selectedDate])
 
   async function handleBook(slotId: string) {
     if (!doctorId) return
@@ -50,7 +69,10 @@ export function AvailableSlots({ doctorId, date }: AvailableSlotsProps) {
     try {
       await bookSlot(slotId)
       toast.success('Slot booked successfully')
-      const data = await getAvailableSlots(doctorId, date)
+      const data = await getAvailableSlots(
+        doctorId,
+        format(selectedDate, 'yyyy-MM-dd')
+      )
       setSlots(
         data.map((slot) => ({
           ...slot,
@@ -93,30 +115,40 @@ export function AvailableSlots({ doctorId, date }: AvailableSlotsProps) {
   }
 
   return (
-    <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-      <div className="space-y-4">
-        {slots.map((slot) => (
-          <div
-            key={slot.id}
-            className="flex items-center justify-between p-2 rounded-lg border"
-          >
-            <div>
-              <p className="font-medium">
-                {format(new Date(slot.startTime), 'h:mm a')} -{' '}
-                {format(new Date(slot.endTime), 'h:mm a')}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleBook(slot.id)}
-              disabled={bookingId === slot.id}
+    <div className="space-y-6">
+      <Form {...form}>
+        <DatePicker
+          control={form.control}
+          name="date"
+          label="Select Date"
+          required
+        />
+      </Form>
+      <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+        <div className="space-y-4">
+          {slots.map((slot) => (
+            <div
+              key={slot.id}
+              className="flex items-center justify-between p-2 rounded-lg border"
             >
-              {bookingId === slot.id ? 'Booking...' : 'Book'}
-            </Button>
-          </div>
-        ))}
-      </div>
-    </ScrollArea>
+              <div>
+                <p className="font-medium">
+                  {format(new Date(slot.startTime), 'h:mm a')} -{' '}
+                  {format(new Date(slot.endTime), 'h:mm a')}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBook(slot.id)}
+                disabled={bookingId === slot.id}
+              >
+                {bookingId === slot.id ? 'Booking...' : 'Book'}
+              </Button>
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+    </div>
   )
 }
