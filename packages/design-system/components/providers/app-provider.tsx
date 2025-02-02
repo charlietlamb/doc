@@ -19,7 +19,9 @@ import { getBookedSlots } from '@doc/design-system/actions/slots/get-booked-slot
 import { getAvailableSlots } from '@doc/design-system/actions/slots/get-available-slots'
 import { getReccurenceRules } from '@doc/design-system/actions/slots/get-reccurence-rules'
 import { getDoctors } from '../../actions/doctors/get-doctors'
-
+import { hasWeekday, WeekdayNumber } from '@doc/hono/lib/weekdays'
+import { RECURRENCE_TYPES } from '@doc/design-system/lib/recurrence-types'
+3
 export default function AppProvider({
   initialDoctors,
   children,
@@ -77,24 +79,42 @@ export default function AppProvider({
           date.setHours(rule.endTime.getHours(), rule.endTime.getMinutes())
         ),
         endDate: rule.endDate ? new Date(rule.endDate) : null,
-        recurrenceType: rule.recurrenceType || 'daily',
+        recurrenceType: rule.recurrenceType || RECURRENCE_TYPES.DAILY,
         weekdays: rule.weekdays || 0,
       })) || []
+
+    console.log(processedRecurrenceRules)
 
     const filteredRecurrenceRules = processedRecurrenceRules.filter((rule) => {
       if (!rule.endDate || rule.endDate.getTime() < new Date().getTime()) {
         return false
       }
 
-      return !bookedSlots?.some((slot) =>
-        doTimesOverlap(
-          rule.startTime,
-          rule.endTime,
-          slot.startTime,
-          slot.endTime
+      if (rule.recurrenceType === RECURRENCE_TYPES.WEEKLY) {
+        const isValidDay = hasWeekday(
+          rule.weekdays,
+          date.getDay() as WeekdayNumber
         )
+        if (!isValidDay) {
+          return false
+        }
+      }
+
+      return (
+        !bookedSlots?.some((slot) =>
+          doTimesOverlap(
+            rule.startTime,
+            rule.endTime,
+            slot.startTime,
+            slot.endTime
+          )
+        ) &&
+        rule.recurrenceType === 'weekly' &&
+        hasWeekday(rule.weekdays, date.getDay() as WeekdayNumber)
       )
     })
+
+    console.log(filteredRecurrenceRules)
 
     setRecurrenceRules(filteredRecurrenceRules)
 

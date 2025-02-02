@@ -26,6 +26,8 @@ import {
 import { createRecurrence } from '@doc/design-system/actions/slots/create-reccurence'
 import { QUERY_KEYS } from '../../lib/query-keys'
 import { useQueryClient } from '@tanstack/react-query'
+import { RECURRENCE_TYPES } from '../../lib/recurrence-types'
+
 const recurrenceSchema = z.object({
   recurrenceType: z.enum(['once', 'daily', 'weekly']),
   weekdays: z.number().int().min(0).max(127).optional(),
@@ -89,7 +91,7 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
       numberOfSlots: 1,
       doctorId: doctor?.id,
       recurrence: {
-        recurrenceType: 'once',
+        recurrenceType: RECURRENCE_TYPES.ONCE,
         weekdays: 0,
       },
     },
@@ -133,8 +135,7 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
         throw new Error('Doctor ID is required')
       }
 
-      if (data.recurrence.recurrenceType === 'once') {
-        // Handle one-time slots
+      if (data.recurrence.recurrenceType === RECURRENCE_TYPES.ONCE) {
         const slots = Array.from({ length: data.numberOfSlots }, (_, index) => {
           const slotStartTime = new Date(startTime)
           slotStartTime.setMinutes(
@@ -171,22 +172,29 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
           )
         }
       } else {
-        const endTime = new Date(startTime)
-        endTime.setMinutes(
-          startTime.getMinutes() + data.numberOfSlots * data.duration
-        )
+        // Create multiple recurring slots
+        for (let i = 0; i < data.numberOfSlots; i++) {
+          const slotStartTime = new Date(startTime)
+          slotStartTime.setMinutes(startTime.getMinutes() + i * data.duration)
 
-        await createRecurrence({
-          doctorId: doctor.id,
-          startTime,
-          endTime,
-          recurrenceType: data.recurrence.recurrenceType,
-          weekdays:
-            data.recurrence.recurrenceType === 'weekly'
-              ? data.recurrence.weekdays
-              : undefined,
-          endDate: data.recurrence.endDate,
-        })
+          const slotEndTime = new Date(slotStartTime)
+          slotEndTime.setMinutes(slotStartTime.getMinutes() + data.duration)
+
+          await createRecurrence({
+            doctorId: doctor.id,
+            startTime: slotStartTime,
+            endTime: slotEndTime,
+            recurrenceType: data.recurrence.recurrenceType as
+              | 'once'
+              | 'daily'
+              | 'weekly',
+            weekdays:
+              data.recurrence.recurrenceType === RECURRENCE_TYPES.WEEKLY
+                ? data.recurrence.weekdays
+                : undefined,
+            endDate: data.recurrence.endDate,
+          })
+        }
 
         toast.success('Recurring slots created successfully')
         queryClient.invalidateQueries({
@@ -200,7 +208,7 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
         duration: 30,
         numberOfSlots: 1,
         recurrence: {
-          recurrenceType: 'once',
+          recurrenceType: RECURRENCE_TYPES.ONCE as 'once',
           weekdays: 0,
         },
       })
@@ -283,9 +291,12 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
             <div className="flex items-center space-x-2 cursor-pointer">
               <Checkbox
                 id="once"
-                checked={recurrence.recurrenceType === 'once'}
+                checked={recurrence.recurrenceType === RECURRENCE_TYPES.ONCE}
                 onCheckedChange={() =>
-                  form.setValue('recurrence.recurrenceType', 'once')
+                  form.setValue(
+                    'recurrence.recurrenceType',
+                    RECURRENCE_TYPES.ONCE as 'once'
+                  )
                 }
                 className="cursor-pointer"
               />
@@ -296,9 +307,12 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
             <div className="flex items-center space-x-2 cursor-pointer">
               <Checkbox
                 id="daily"
-                checked={recurrence.recurrenceType === 'daily'}
+                checked={recurrence.recurrenceType === RECURRENCE_TYPES.DAILY}
                 onCheckedChange={() =>
-                  form.setValue('recurrence.recurrenceType', 'daily')
+                  form.setValue(
+                    'recurrence.recurrenceType',
+                    RECURRENCE_TYPES.DAILY as 'daily'
+                  )
                 }
                 className="cursor-pointer"
               />
@@ -309,9 +323,12 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
             <div className="flex items-center space-x-2 cursor-pointer">
               <Checkbox
                 id="weekly"
-                checked={recurrence.recurrenceType === 'weekly'}
+                checked={recurrence.recurrenceType === RECURRENCE_TYPES.WEEKLY}
                 onCheckedChange={() =>
-                  form.setValue('recurrence.recurrenceType', 'weekly')
+                  form.setValue(
+                    'recurrence.recurrenceType',
+                    RECURRENCE_TYPES.WEEKLY as 'weekly'
+                  )
                 }
                 className="cursor-pointer"
               />
@@ -321,7 +338,7 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
             </div>
           </div>
 
-          {recurrence.recurrenceType !== 'once' && (
+          {recurrence.recurrenceType !== RECURRENCE_TYPES.ONCE && (
             <DatePicker
               control={form.control}
               name="recurrence.endDate"
@@ -329,7 +346,7 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
             />
           )}
 
-          {recurrence.recurrenceType === 'weekly' && (
+          {recurrence.recurrenceType === RECURRENCE_TYPES.WEEKLY && (
             <div className="space-y-2">
               <Label>Select Days</Label>
               <div className="grid grid-cols-7 gap-2">

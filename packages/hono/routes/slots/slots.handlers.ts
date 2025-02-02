@@ -13,7 +13,7 @@ import { addWeeks, setHours, setMinutes, addMinutes, isBefore } from 'date-fns'
 import { type RecurrenceRule } from '@doc/database/schema/recurrence-rules'
 import { hasWeekday, WeekdayNumber } from '../../lib/weekdays'
 import { bookings } from '@doc/database/schema'
-
+import { RECURRENCE_TYPES } from '@doc/design-system/lib/recurrence-types'
 async function checkSlotOverlap(
   doctorId: string,
   startTime: Date,
@@ -163,9 +163,10 @@ function generateSlots(rule: RecurrenceRule) {
 
     // Check if we should create slots for this day
     const shouldCreateSlots =
-      rule.recurrenceType === 'once' ||
-      rule.recurrenceType === 'daily' ||
-      (rule.recurrenceType === 'weekly' && hasWeekday(rule.weekdays, dayOfWeek))
+      rule.recurrenceType === RECURRENCE_TYPES.ONCE ||
+      rule.recurrenceType === RECURRENCE_TYPES.DAILY ||
+      (rule.recurrenceType === RECURRENCE_TYPES.WEEKLY &&
+        hasWeekday(rule.weekdays, dayOfWeek))
 
     if (shouldCreateSlots) {
       // Create slots for the day's time range
