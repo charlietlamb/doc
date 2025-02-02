@@ -24,11 +24,18 @@ export const selectDoctorSchema = createSelectSchema(doctors)
 export const insertDoctorSchema = createInsertSchema(doctors)
 export type Doctor = typeof doctors.$inferSelect
 
-export const doctorFormSchema = selectDoctorSchema.pick({
-  username: true,
-  firstName: true,
-  lastName: true,
-  email: true,
-})
+export const doctorFormSchema = selectDoctorSchema
+  .pick({
+    username: true,
+    firstName: true,
+    lastName: true,
+    email: true,
+  })
+  .extend({
+    username: z.string().min(3).max(20),
+    firstName: z.string().min(3).max(20),
+    lastName: z.string().min(3).max(20),
+    email: z.string().email(),
+  })
 
 export type DoctorForm = z.infer<typeof doctorFormSchema>

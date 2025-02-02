@@ -7,5 +7,9 @@ export async function createDoctor(data: DoctorForm) {
   const response = await client.doctors.$post({
     json: data,
   })
-  return response.json()
+  const json = await response.json()
+  if ('error' in json) {
+    throw new Error(json.error)
+  }
+  return json
 }

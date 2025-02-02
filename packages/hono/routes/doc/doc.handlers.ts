@@ -19,7 +19,7 @@ export const create: AppRouteHandler<CreateDoctorRoute> = async (c) => {
   } catch (error) {
     console.error(error)
     return c.json(
-      { error: 'Failed to create business' },
+      { error: 'Failed to create doctor' },
       HttpStatusCodes.INTERNAL_SERVER_ERROR
     )
   }

@@ -16,6 +16,7 @@ import { useQuery } from '@tanstack/react-query'
 import { QUERY_KEYS } from '../../lib/query-keys'
 import { getBookedSlots } from '@doc/design-system/actions/slots/get-booked-slots'
 import { getAvailableSlots } from '@doc/design-system/actions/slots/get-available-slots'
+import { getDoctors } from '../../actions/doctors/get-doctors'
 
 export default function AppProvider({
   initialDoctors,
@@ -39,15 +40,25 @@ export default function AppProvider({
     queryFn: () => doctor && getAvailableSlots(doctor.id, date.toISOString()),
   })
 
+  const { data: fetchedDoctors } = useQuery({
+    queryKey: [QUERY_KEYS.DOCTORS],
+    queryFn: () => getDoctors(),
+    initialData: initialDoctors as Doctor[],
+  })
+
   useEffect(() => {
     setBookedSlots(bookedSlots || [])
     setAvailableSlots(availableSlots || [])
   }, [bookedSlots, availableSlots])
 
   useEffect(() => {
-    !doctors.length && setDoctors(initialDoctors)
-    !!doctors.length && !doctor && setDoctor(initialDoctors[0])
-  }, [initialDoctors])
+    if (fetchedDoctors) {
+      setDoctors(fetchedDoctors)
+      if (!doctor) {
+        setDoctor(fetchedDoctors[0])
+      }
+    }
+  }, [fetchedDoctors])
 
   return children
 }

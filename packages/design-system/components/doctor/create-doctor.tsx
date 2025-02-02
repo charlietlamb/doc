@@ -18,7 +18,9 @@ import { createDoctor } from '@doc/design-system/actions/doctors/create-doctor'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Spinner from '../misc/spinner'
-import { useToast } from '@doc/design-system/hooks/use-toast'
+import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEYS } from '@doc/design-system/lib/query-keys'
 
 export default function CreateDoctor() {
   const form = useForm<DoctorForm>({
@@ -32,25 +34,26 @@ export default function CreateDoctor() {
     mode: 'onChange',
   })
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const { toast } = useToast()
+  const queryClient = useQueryClient()
 
   async function onSubmit(data: DoctorForm) {
     try {
+      if (!form.formState.isValid) {
+        return toast.error('Please fill in all fields', {
+          description: Object.values(form.formState.errors)
+            .map((error) => error.message)
+            .join(', '),
+        })
+      }
       setLoading(true)
-      const response = await createDoctor(data)
-      toast({
-        title: 'Success',
-        description: 'Doctor created successfully',
-      })
-      router.refresh()
+      await createDoctor(data)
+      form.reset()
+      toast.success('Doctor created successfully')
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.DOCTORS] })
     } catch (error) {
-      toast({
-        title: 'Error',
-        description:
-          error instanceof Error ? error.message : 'Failed to create doctor',
-        variant: 'destructive',
-      })
+      toast.error(
+        error instanceof Error ? error.message : 'Failed to create doctor'
+      )
     } finally {
       setLoading(false)
     }
