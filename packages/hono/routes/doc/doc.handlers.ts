@@ -45,7 +45,7 @@ export const getBookedSlots: AppRouteHandler<GetBookedSlotsRoute> = async (
     const bookedSlots = await db
       .select()
       .from(slots)
-      .where(eq(slots.doctorId, doctorId))
+      .where(and(eq(slots.doctorId, doctorId), eq(slots.status, 'booked')))
     return c.json(bookedSlots, HttpStatusCodes.OK)
   } catch (error) {
     return c.json(

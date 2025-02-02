@@ -13,13 +13,6 @@ import TimePicker from '@doc/design-system/components/form/time-picker'
 import DurationPicker from '@doc/design-system/components/form/duration-picker'
 import SlotsPicker from '@doc/design-system/components/form/slots-picker'
 import Spinner from '../misc/spinner'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@doc/design-system/components/ui/select'
 import { Checkbox } from '@doc/design-system/components/ui/checkbox'
 import { Label } from '@doc/design-system/components/ui/label'
 import { endOfDay, differenceInMinutes } from 'date-fns'
@@ -64,7 +57,7 @@ function calculateMaxSlots(startTime: Date, duration: number): number {
   return Math.floor(availableMinutes / duration)
 }
 
-export function CreateSlot() {
+export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
   const [isLoading, setIsLoading] = useState(false)
   const [maxSlots, setMaxSlots] = useState(1)
   const doctor = useAtomValue(doctorAtom)
@@ -194,6 +187,7 @@ export function CreateSlot() {
     } finally {
       console.log('Form submission completed')
       setIsLoading(false)
+      onSuccess?.()
     }
   }
 

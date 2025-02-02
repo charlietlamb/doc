@@ -47,8 +47,16 @@ export default function AppProvider({
   })
 
   useEffect(() => {
-    setBookedSlots(bookedSlots || [])
-    setAvailableSlots(availableSlots || [])
+    setBookedSlots(
+      bookedSlots?.sort(
+        (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      ) || []
+    )
+    setAvailableSlots(
+      availableSlots?.sort(
+        (a, b) => a.startTime.getTime() - b.startTime.getTime()
+      ) || []
+    )
   }, [bookedSlots, availableSlots])
 
   useEffect(() => {

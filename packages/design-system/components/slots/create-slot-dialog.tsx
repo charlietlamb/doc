@@ -7,14 +7,15 @@ import {
   DialogTrigger,
 } from '../ui/dialog'
 import { CreateSlot } from './create-slot'
-
+import { useState } from 'react'
 export default function CreateSlotDialog({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const [open, setOpen] = useState(false)
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -23,7 +24,7 @@ export default function CreateSlotDialog({
             Create a new appointment slot with recurrence options
           </DialogDescription>
         </DialogHeader>
-        <CreateSlot />
+        <CreateSlot onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )

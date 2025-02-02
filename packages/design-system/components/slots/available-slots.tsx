@@ -32,6 +32,9 @@ export function AvailableSlots() {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
       })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.BOOKED_SLOTS, doctor?.id],
+      })
     } catch (error) {
       toast.error('Failed to book slot')
     } finally {

@@ -3,7 +3,6 @@ import {
   BookSlotRoute,
   CreateSlotRoute,
   CreateRecurringSlotsRoute,
-  GetBookedSlotsRoute,
   GetAvailableSlotsRoute,
 } from '@doc/hono/routes/slots/slots.routes'
 import { AppRouteHandler } from '@doc/hono/lib/types'
@@ -197,51 +196,6 @@ function generateSlots(rule: RecurrenceRule) {
   }
 
   return generatedSlots
-}
-
-export const getBookedSlots: AppRouteHandler<GetBookedSlotsRoute> = async (
-  c
-) => {
-  const doctorId = c.req.param('doctorId')
-  const startDate = c.req.query('start_date')
-  const endDate = c.req.query('end_date')
-
-  if (!startDate || !endDate) {
-    return c.json(
-      { error: 'Start date and end date are required' },
-      HttpStatusCodes.BAD_REQUEST
-    )
-  }
-
-  try {
-    const bookedSlots = await db
-      .select({
-        doctorId: slots.doctorId,
-        startTime: slots.startTime,
-        endTime: slots.endTime,
-      })
-      .from(slots)
-      .where(
-        and(
-          eq(slots.doctorId, doctorId),
-          eq(slots.status, 'booked'),
-          sql`${slots.startTime} >= ${new Date(startDate)} AND ${slots.startTime} <= ${new Date(endDate)}`
-        )
-      )
-
-    const formattedSlots = bookedSlots.map((slot) => ({
-      doctorId: slot.doctorId,
-      startTime: slot.startTime.getTime(),
-      endTime: slot.endTime.getTime(),
-    }))
-
-    return c.json(formattedSlots, HttpStatusCodes.OK)
-  } catch (error) {
-    return c.json(
-      { error: 'Failed to get booked slots' },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
-    )
-  }
 }
 
 export const getAvailableSlots: AppRouteHandler<
