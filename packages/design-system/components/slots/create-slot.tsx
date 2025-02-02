@@ -10,6 +10,8 @@ import { toast } from 'sonner'
 import { createSlot } from '@doc/design-system/actions/slots/create-slot'
 import DatePicker from '@doc/design-system/components/form/date-picker'
 import TimePicker from '@doc/design-system/components/form/time-picker'
+import DurationPicker from '@doc/design-system/components/form/duration-picker'
+import SlotsPicker from '@doc/design-system/components/form/slots-picker'
 import Spinner from '../misc/spinner'
 import {
   Select,
@@ -120,102 +122,50 @@ export function CreateSlot() {
   }, [date, duration, form])
 
   const onSubmit = async (data: FormData) => {
-    console.log('=== Form Submission Debug Logs ===')
-    console.log('Raw form data:', {
-      date: data.date.toISOString(),
-      time: data.time.toISOString(),
-      duration: data.duration,
-      numberOfSlots: data.numberOfSlots,
-    })
-
     try {
-      if (!doctor?.id) {
-        console.log('Submission blocked: Missing doctor ID')
-        toast.error('Please select a doctor first')
-        return
-      }
       setIsLoading(true)
 
-      // Create base date from the selected date, ensuring time is set to midnight
       const baseDate = new Date(data.date)
       baseDate.setHours(0, 0, 0, 0)
-
-      // Get hours and minutes from the time picker
       const hours = data.time.getHours()
       const minutes = data.time.getMinutes()
-
-      // Create the initial start time by adding hours and minutes to the base date
       const startTime = new Date(baseDate)
       startTime.setHours(hours)
       startTime.setMinutes(minutes)
 
-      console.log('Time components:', {
-        baseDate: baseDate.toISOString(),
-        hours,
-        minutes,
-        startTime: startTime.toISOString(),
-      })
-
       const slots = Array.from({ length: data.numberOfSlots }, (_, index) => {
-        // Calculate slot times using the duration in minutes
         const slotStartTime = new Date(startTime)
         slotStartTime.setMinutes(startTime.getMinutes() + index * data.duration)
 
         const slotEndTime = new Date(slotStartTime)
         slotEndTime.setMinutes(slotStartTime.getMinutes() + data.duration)
 
-        console.log(`Slot ${index + 1}:`, {
-          start: slotStartTime.toISOString(),
-          end: slotEndTime.toISOString(),
-          duration: data.duration,
-        })
+        if (!doctor?.id) {
+          throw new Error('Doctor ID is required')
+        }
 
         return {
-          ...data,
-          doctorId: doctor?.id,
           startTime: slotStartTime,
           endTime: slotEndTime,
+          doctorId: doctor.id,
+          date: data.date,
+          time: data.time,
+          duration: data.duration,
         }
       })
 
-      console.log(
-        'Generated slots:',
-        slots.map((slot) => ({
-          startTime: slot.startTime.toISOString(),
-          endTime: slot.endTime.toISOString(),
-          duration: slot.duration,
-          recurrence: slot.recurrence,
-        }))
-      )
-
-      // Create slots sequentially and stop if there's an overlap
       let createdCount = 0
       for (const slot of slots) {
         try {
-          console.log(
-            `Attempting to create slot ${createdCount + 1}/${slots.length}`
-          )
           await createSlot(slot)
-          console.log(`Successfully created slot ${createdCount + 1}`)
           createdCount++
         } catch (error) {
           console.error('Error creating slot:', error)
-          if (error instanceof Error) {
-            console.error('Error message:', error.message)
-            console.error('Error stack:', error.stack)
-            if (error.message.includes('overlaps')) {
-              toast.error(
-                `Slot ${createdCount + 1} overlaps with existing slots. Stopping creation.`
-              )
-              break
-            }
-          }
           throw error
         }
       }
 
       if (createdCount > 0) {
-        console.log(`Successfully created ${createdCount} slots`)
         toast.success(
           `${createdCount} slot${createdCount > 1 ? 's' : ''} created successfully`
         )
@@ -286,47 +236,20 @@ export function CreateSlot() {
             className="col-span-2"
           />
 
-          <div className="space-y-4">
-            <RequiredLabel>Duration</RequiredLabel>
-            <Select
-              value={duration.toString()}
-              onValueChange={(value) =>
-                form.setValue('duration', parseInt(value) as 15 | 30)
-              }
-              defaultValue="30"
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select duration" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="15">15 minutes</SelectItem>
-                <SelectItem value="30">30 minutes</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <DurationPicker
+            control={form.control}
+            name="duration"
+            label="Duration"
+            required
+          />
 
-          <div className="space-y-4">
-            <RequiredLabel>Number of Slots</RequiredLabel>
-            <Select
-              value={form.watch('numberOfSlots').toString()}
-              onValueChange={(value) =>
-                form.setValue('numberOfSlots', parseInt(value))
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select number of slots" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: maxSlots }, (_, i) => i + 1).map(
-                  (num) => (
-                    <SelectItem key={num} value={num.toString()}>
-                      {num} slot{num > 1 ? 's' : ''}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+          <SlotsPicker
+            control={form.control}
+            name="numberOfSlots"
+            label="Number of Slots"
+            maxSlots={maxSlots}
+            required
+          />
         </div>
 
         <div className="space-y-4">
