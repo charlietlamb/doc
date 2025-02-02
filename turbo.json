@@ -1,27 +1,31 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "ui": "tui",
+  "globalEnv": ["DATABASE_URL", "NODE_ENV", "LOG_LEVEL"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"],
       "inputs": [
         "$TURBO_DEFAULT$",
-        ".env*",
-        "DATABASE_URL",
-        "LOG_LEVEL",
-        "NODE_ENV"
-      ],
-      "outputs": [".next/**", "!.next/cache/**"]
-    },
-    "lint": {
-      "dependsOn": ["^lint"]
+        ".env.production.local",
+        ".env.local",
+        ".env.production",
+        ".env"
+      ]
     },
     "check-types": {
       "dependsOn": ["^check-types"]
     },
     "dev": {
+      "persistent": true,
       "cache": false,
-      "persistent": true
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env.development.local",
+        ".env.local",
+        ".env.development",
+        ".env"
+      ]
     }
   }
 }

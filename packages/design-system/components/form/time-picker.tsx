@@ -37,7 +37,6 @@ export default function TimePicker<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => {
-        // Convert Date to Time
         const value = field.value ? new Date(field.value) : new Date()
         const timeValue = new Time(value.getHours(), value.getMinutes())
 

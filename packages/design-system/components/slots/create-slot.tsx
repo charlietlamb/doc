@@ -115,21 +115,56 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
   }, [date, duration, form])
 
   const onSubmit = async (data: FormData) => {
-    console.log('Form submitted with data:', data)
+    console.log('=== Form Submission Debug Logs ===')
+    console.log('Raw form data:', {
+      date: data.date.toISOString(),
+      time: data.time.toISOString(),
+      duration: data.duration,
+      numberOfSlots: data.numberOfSlots,
+    })
+
     try {
       if (!doctorId) {
+        console.log('Submission blocked: Missing doctor ID')
         toast.error('Please select a doctor first')
         return
       }
       setIsLoading(true)
 
-      const startTime = new Date(data.date)
-      startTime.setHours(data.time.getHours())
-      startTime.setMinutes(data.time.getMinutes())
+      // Create base date from the selected date, ensuring time is set to midnight
+      const baseDate = new Date(data.date)
+      baseDate.setHours(0, 0, 0, 0)
+
+      // Get hours and minutes from the time picker
+      const hours = data.time.getHours()
+      const minutes = data.time.getMinutes()
+
+      // Create the initial start time by adding hours and minutes to the base date
+      const startTime = new Date(baseDate)
+      startTime.setHours(hours)
+      startTime.setMinutes(minutes)
+
+      console.log('Time components:', {
+        baseDate: baseDate.toISOString(),
+        hours,
+        minutes,
+        startTime: startTime.toISOString(),
+      })
 
       const slots = Array.from({ length: data.numberOfSlots }, (_, index) => {
-        const slotStartTime = addMinutes(startTime, index * data.duration)
-        const slotEndTime = addMinutes(slotStartTime, data.duration)
+        // Calculate slot times using the duration in minutes
+        const slotStartTime = new Date(startTime)
+        slotStartTime.setMinutes(startTime.getMinutes() + index * data.duration)
+
+        const slotEndTime = new Date(slotStartTime)
+        slotEndTime.setMinutes(slotStartTime.getMinutes() + data.duration)
+
+        console.log(`Slot ${index + 1}:`, {
+          start: slotStartTime.toISOString(),
+          end: slotEndTime.toISOString(),
+          duration: data.duration,
+        })
+
         return {
           ...data,
           doctorId,
@@ -138,26 +173,44 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
         }
       })
 
-      console.log('Creating slots with data:', slots)
+      console.log(
+        'Generated slots:',
+        slots.map((slot) => ({
+          startTime: slot.startTime.toISOString(),
+          endTime: slot.endTime.toISOString(),
+          duration: slot.duration,
+          recurrence: slot.recurrence,
+        }))
+      )
 
       // Create slots sequentially and stop if there's an overlap
       let createdCount = 0
       for (const slot of slots) {
         try {
+          console.log(
+            `Attempting to create slot ${createdCount + 1}/${slots.length}`
+          )
           await createSlot(slot)
+          console.log(`Successfully created slot ${createdCount + 1}`)
           createdCount++
         } catch (error) {
-          if (error instanceof Error && error.message.includes('overlaps')) {
-            toast.error(
-              `Slot ${createdCount + 1} overlaps with existing slots. Stopping creation.`
-            )
-            break
+          console.error('Error creating slot:', error)
+          if (error instanceof Error) {
+            console.error('Error message:', error.message)
+            console.error('Error stack:', error.stack)
+            if (error.message.includes('overlaps')) {
+              toast.error(
+                `Slot ${createdCount + 1} overlaps with existing slots. Stopping creation.`
+              )
+              break
+            }
           }
-          throw error // Re-throw if it's not an overlap error
+          throw error
         }
       }
 
       if (createdCount > 0) {
+        console.log(`Successfully created ${createdCount} slots`)
         toast.success(
           `${createdCount} slot${createdCount > 1 ? 's' : ''} created successfully`
         )
@@ -174,11 +227,18 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
         })
       }
     } catch (error) {
-      console.error('Failed to create slots:', error)
+      console.error('=== Form Submission Error ===')
+      console.error('Error details:', error)
+      if (error instanceof Error) {
+        console.error('Error name:', error.name)
+        console.error('Error message:', error.message)
+        console.error('Error stack:', error.stack)
+      }
       toast.error(
         error instanceof Error ? error.message : 'Failed to create slots'
       )
     } finally {
+      console.log('Form submission completed')
       setIsLoading(false)
     }
   }
@@ -195,7 +255,24 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(
+          (data) => {
+            console.log('Form submitted successfully', data)
+            return onSubmit(data)
+          },
+          (errors) => {
+            console.error('Form validation failed:', errors)
+            console.error('Current form values:', form.getValues())
+            console.error('Form state:', form.formState)
+            toast.error('Please check all required fields')
+          }
+        )}
+        className="space-y-6"
+        onClick={(e) => {
+          console.log('Form clicked', e.target)
+        }}
+      >
         <div className="grid grid-cols-2 gap-4">
           <DatePicker
             control={form.control}
@@ -300,7 +377,7 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
           </div>
 
           {recurrence.recurrenceType !== 'once' && (
-            <DateTimePicker
+            <DatePicker
               control={form.control}
               name="recurrence.endDate"
               label="End Date"
