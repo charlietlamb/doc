@@ -1,7 +1,10 @@
 import client from '@doc/design-system/lib/client'
-import type { GetBookedSlotsRoute } from '@doc/hono/routes/doc/doc.routes'
+import { Slot } from '@doc/database/schema'
 
-export async function getBookedSlots(doctorId: string, date: string) {
+export async function getBookedSlots(
+  doctorId: string,
+  date: string
+): Promise<Slot[]> {
   const response = await client.doctors[':doctorId']['bookings'].$get({
     param: { doctorId },
     query: {
@@ -14,5 +17,13 @@ export async function getBookedSlots(doctorId: string, date: string) {
     throw new Error('Failed to fetch booked slots')
   }
 
-  return response.json()
+  const data = await response.json()
+
+  return data.map((slot) => ({
+    ...slot,
+    createdAt: new Date(slot.createdAt),
+    updatedAt: new Date(slot.updatedAt),
+    startTime: new Date(slot.startTime),
+    endTime: new Date(slot.endTime),
+  }))
 }

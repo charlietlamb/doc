@@ -14,13 +14,8 @@ interface ProvidersProps {
 }
 
 export function Providers({ doctors, children }: ProvidersProps) {
-  const doctorsWithDates = doctors?.map((doctor) => ({
-    ...doctor,
-    createdAt: new Date(doctor.createdAt),
-    updatedAt: new Date(doctor.updatedAt),
-  }))
   return (
-    <AppProvider initialDoctors={doctorsWithDates}>
+    <AppProvider initialDoctors={doctors}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <CustomThemeProvider>
           <TooltipProvider>

@@ -26,12 +26,18 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const doctors = await getDoctors()
+  const doctorsWithDateObjects = doctors.map((doctor) => ({
+    ...doctor,
+    createdAt: new Date(doctor.createdAt),
+    updatedAt: new Date(doctor.updatedAt),
+  }))
+
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers doctors={doctors}>
+        <Providers doctors={doctorsWithDateObjects}>
           <Header />
           {children}
         </Providers>

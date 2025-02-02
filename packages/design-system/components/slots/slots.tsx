@@ -16,13 +16,10 @@ import DatePickerJotai from '../form/date-picker-jotai'
 export default function Slots() {
   return (
     <div className="container mx-auto p-6 space-y-8">
-      <DoctorSelect />
-      <DatePickerJotai
-        name="date"
-        label="Date"
-        required
-        className="col-span-2"
-      />
+      <div className="grid md:grid-cols-2 gap-6">
+        <DoctorSelect />
+        <DatePickerJotai name="date" label="Date" required />
+      </div>
       <div className="grid lg:grid-cols-2 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>

@@ -30,7 +30,7 @@ export default function DatePickerJotai({
   const [selectedDate, setSelectedDate] = useAtom(dateAtom)
 
   return (
-    <>
+    <div className={cn('flex flex-col gap-2', className)}>
       <RequiredLabel htmlFor={name} required={required}>
         {label}
       </RequiredLabel>
@@ -56,13 +56,13 @@ export default function DatePickerJotai({
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={selectedDate ?? undefined}
-              onSelect={(date) => setSelectedDate(date ?? null)}
+              selected={selectedDate}
+              onSelect={(date) => setSelectedDate(date ?? new Date())}
               initialFocus
             />
           </PopoverContent>
         </Popover>
       </div>
-    </>
+    </div>
   )
 }

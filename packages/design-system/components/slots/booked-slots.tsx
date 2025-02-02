@@ -9,18 +9,17 @@ import { format } from 'date-fns'
 import DatePicker from '@doc/design-system/components/form/date-picker'
 import { useForm } from 'react-hook-form'
 import { Form } from '@doc/design-system/components/ui/form'
+import {
+  dateAtom,
+  doctorAtom,
+} from '@doc/design-system/atoms/doctor/doctor-atoms'
+import { useAtomValue } from 'jotai'
 
-interface BookedSlotsProps {
-  doctorId?: string
-}
-
-interface FormData {
-  date: Date
-}
-
-export function BookedSlots({ doctorId }: BookedSlotsProps) {
+export function BookedSlots() {
   const [slots, setSlots] = useState<Slot[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const selectedDate = useAtomValue(dateAtom)
+  const doctor = useAtomValue(doctorAtom)
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -28,15 +27,13 @@ export function BookedSlots({ doctorId }: BookedSlotsProps) {
     },
   })
 
-  const selectedDate = form.watch('date')
-
   useEffect(() => {
     async function fetchSlots() {
-      if (!doctorId) return
+      if (!doctor?.id) return
       setIsLoading(true)
       try {
         const data = await getBookedSlots(
-          doctorId,
+          doctor.id,
           format(selectedDate, 'yyyy-MM-dd')
         )
         setSlots(
@@ -56,7 +53,7 @@ export function BookedSlots({ doctorId }: BookedSlotsProps) {
     }
 
     fetchSlots()
-  }, [doctorId, selectedDate])
+  }, [doctor?.id, selectedDate])
 
   if (isLoading) {
     return (
@@ -66,7 +63,7 @@ export function BookedSlots({ doctorId }: BookedSlotsProps) {
     )
   }
 
-  if (!doctorId) {
+  if (!doctor?.id) {
     return (
       <div className="text-center py-4 text-muted-foreground">
         Please select a doctor
@@ -84,14 +81,6 @@ export function BookedSlots({ doctorId }: BookedSlotsProps) {
 
   return (
     <div className="space-y-6">
-      <Form {...form}>
-        <DatePicker
-          control={form.control}
-          name="date"
-          label="Select Date"
-          required
-        />
-      </Form>
       <ScrollArea className="h-[300px] w-full">
         <div className="space-y-4">
           {slots.map((slot) => (
