@@ -7,6 +7,7 @@ import { Toaster } from '@doc/design-system/components/ui/toaster'
 import { SonnerProvider } from './sonner'
 import { Doctor } from '@doc/database/schema/doctors'
 import AppProvider from './app-provider'
+import ReactQueryProvider from './react-query-provider'
 
 interface ProvidersProps {
   children: React.ReactNode
@@ -15,16 +16,18 @@ interface ProvidersProps {
 
 export function Providers({ doctors, children }: ProvidersProps) {
   return (
-    <AppProvider initialDoctors={doctors}>
-      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <CustomThemeProvider>
-          <TooltipProvider>
-            <Toaster />
-            {children}
-          </TooltipProvider>
-        </CustomThemeProvider>
-        <SonnerProvider />
-      </ThemeProvider>
-    </AppProvider>
+    <ReactQueryProvider>
+      <AppProvider initialDoctors={doctors}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <CustomThemeProvider>
+            <TooltipProvider>
+              <Toaster />
+              {children}
+            </TooltipProvider>
+          </CustomThemeProvider>
+          <SonnerProvider />
+        </ThemeProvider>
+      </AppProvider>
+    </ReactQueryProvider>
   )
 }

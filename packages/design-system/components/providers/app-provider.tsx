@@ -1,11 +1,21 @@
 'use client'
-import { useAtom } from 'jotai'
+import { useAtom, useAtomValue } from 'jotai'
 import {
+  dateAtom,
   doctorAtom,
   doctorsAtom,
 } from '@doc/design-system/atoms/doctor/doctor-atoms'
 import { useEffect } from 'react'
 import { Doctor } from '@doc/database/schema'
+import {
+  availableSlotsAtom,
+  bookedSlotsAtom,
+} from '@doc/design-system/atoms/doctor/doctor-atoms'
+import { useSetAtom } from 'jotai'
+import { useQuery } from '@tanstack/react-query'
+import { QUERY_KEYS } from '../../lib/query-keys'
+import { getBookedSlots } from '@doc/design-system/actions/slots/get-booked-slots'
+import { getAvailableSlots } from '@doc/design-system/actions/slots/get-available-slots'
 
 export default function AppProvider({
   initialDoctors,
@@ -16,6 +26,23 @@ export default function AppProvider({
 }) {
   const [doctor, setDoctor] = useAtom(doctorAtom)
   const [doctors, setDoctors] = useAtom(doctorsAtom)
+  const date = useAtomValue(dateAtom)
+  const setAvailableSlots = useSetAtom(availableSlotsAtom)
+  const setBookedSlots = useSetAtom(bookedSlotsAtom)
+
+  const { data: bookedSlots } = useQuery({
+    queryKey: [QUERY_KEYS.BOOKED_SLOTS, doctor?.id],
+    queryFn: () => doctor && getBookedSlots(doctor.id, date.toISOString()),
+  })
+  const { data: availableSlots } = useQuery({
+    queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
+    queryFn: () => doctor && getAvailableSlots(doctor.id, date.toISOString()),
+  })
+
+  useEffect(() => {
+    setBookedSlots(bookedSlots || [])
+    setAvailableSlots(availableSlots || [])
+  }, [bookedSlots, availableSlots])
 
   useEffect(() => {
     !doctors.length && setDoctors(initialDoctors)

@@ -1,100 +1,42 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { Slot } from '@doc/database/schema/slots'
+import { useState } from 'react'
 import { getAvailableSlots } from '@doc/design-system/actions/slots/get-available-slots'
 import { ScrollArea } from '@doc/design-system/components/ui/scroll-area'
 import { Button } from '@doc/design-system/components/ui/button'
 import { toast } from 'sonner'
 import { bookSlot } from '@doc/design-system/actions/slots/book-slot'
 import { format } from 'date-fns'
-import { useRouter } from 'next/navigation'
-import DatePicker from '@doc/design-system/components/form/date-picker'
-import { useForm } from 'react-hook-form'
-import { Form } from '@doc/design-system/components/ui/form'
 import { useAtomValue } from 'jotai'
-import { doctorAtom } from '@doc/design-system/atoms/doctor/doctor-atoms'
-
-interface FormData {
-  date: Date
-}
+import {
+  doctorAtom,
+  dateAtom,
+  availableSlotsAtom,
+} from '@doc/design-system/atoms/doctor/doctor-atoms'
+import { useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEYS } from '../../lib/query-keys'
 
 export function AvailableSlots() {
-  const [slots, setSlots] = useState<Slot[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [bookingId, setBookingId] = useState<string>()
   const doctor = useAtomValue(doctorAtom)
-  const router = useRouter()
-
-  const form = useForm<FormData>({
-    defaultValues: {
-      date: new Date(),
-    },
-  })
-
-  const selectedDate = form.watch('date')
-
-  useEffect(() => {
-    async function fetchSlots() {
-      if (!doctor?.id) return
-      setIsLoading(true)
-      try {
-        const data = await getAvailableSlots(
-          doctor.id,
-          format(selectedDate, 'yyyy-MM-dd')
-        )
-        setSlots(
-          data.map((slot: Slot) => ({
-            ...slot,
-            createdAt: new Date(slot.createdAt),
-            updatedAt: new Date(slot.updatedAt),
-            startTime: new Date(slot.startTime),
-            endTime: new Date(slot.endTime),
-          }))
-        )
-      } catch (error) {
-        toast.error('Failed to fetch available slots')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchSlots()
-  }, [doctor?.id, selectedDate])
-
+  const selectedDate = useAtomValue(dateAtom)
+  const availableSlots = useAtomValue(availableSlotsAtom)
+  const queryClient = useQueryClient()
   async function handleBook(slotId: string) {
     if (!doctor?.id) return
     setBookingId(slotId)
     try {
       await bookSlot(slotId)
       toast.success('Slot booked successfully')
-      const data = await getAvailableSlots(
-        doctor.id,
-        format(selectedDate, 'yyyy-MM-dd')
-      )
-      setSlots(
-        data.map((slot) => ({
-          ...slot,
-          createdAt: new Date(slot.createdAt),
-          updatedAt: new Date(slot.updatedAt),
-          startTime: new Date(slot.startTime),
-          endTime: new Date(slot.endTime),
-        }))
-      )
-      router.refresh()
+      await getAvailableSlots(doctor.id, format(selectedDate, 'yyyy-MM-dd'))
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
+      })
     } catch (error) {
       toast.error('Failed to book slot')
     } finally {
       setBookingId(undefined)
     }
-  }
-
-  if (isLoading) {
-    return (
-      <div className="text-center py-4 text-muted-foreground">
-        Loading available slots...
-      </div>
-    )
   }
 
   if (!doctor?.id) {
@@ -105,7 +47,7 @@ export function AvailableSlots() {
     )
   }
 
-  if (!slots.length) {
+  if (!availableSlots.length) {
     return (
       <div className="text-center py-4 text-muted-foreground">
         No available slots
@@ -115,17 +57,9 @@ export function AvailableSlots() {
 
   return (
     <div className="space-y-6">
-      <Form {...form}>
-        <DatePicker
-          control={form.control}
-          name="date"
-          label="Select Date"
-          required
-        />
-      </Form>
-      <ScrollArea className="h-[300px] w-full rounded-md border p-4">
+      <ScrollArea className="h-[300px] w-full">
         <div className="space-y-4">
-          {slots.map((slot) => (
+          {availableSlots.map((slot) => (
             <div
               key={slot.id}
               className="flex items-center justify-between p-2 rounded-lg border"
