@@ -3,9 +3,10 @@ import { getDoctors } from '@doc/design-system/actions/doctors/get-doctors'
 
 export default async function Home() {
   const doctors = await getDoctors()
-  console.log(doctors)
-  if ('error' in doctors) {
-    return <div>Error: {doctors.error}</div>
-  }
-  return <Index doctors={doctors} />
+  const doctorsWithDates = doctors.map((doctor) => ({
+    ...doctor,
+    createdAt: new Date(doctor.createdAt),
+    updatedAt: new Date(doctor.updatedAt),
+  }))
+  return <Index doctors={doctorsWithDates} />
 }
