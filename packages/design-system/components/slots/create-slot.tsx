@@ -132,23 +132,39 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
 
       console.log('Creating slots with data:', slots)
 
-      // Create all slots in parallel
-      await Promise.all(slots.map((slot) => createSlot(slot)))
+      // Create slots sequentially and stop if there's an overlap
+      let createdCount = 0
+      for (const slot of slots) {
+        try {
+          await createSlot(slot)
+          createdCount++
+        } catch (error) {
+          if (error instanceof Error && error.message.includes('overlaps')) {
+            toast.error(
+              `Slot ${createdCount + 1} overlaps with existing slots. Stopping creation.`
+            )
+            break
+          }
+          throw error // Re-throw if it's not an overlap error
+        }
+      }
 
-      toast.success(
-        `${data.numberOfSlots} slot${data.numberOfSlots > 1 ? 's' : ''} created successfully`
-      )
-      form.reset({
-        startTime: roundToNext15Minutes(new Date()),
-        endTime: addMinutes(roundToNext15Minutes(new Date()), 30),
-        doctorId: doctorId,
-        duration: 30,
-        numberOfSlots: 1,
-        recurrence: {
-          recurrenceType: 'once',
-          weekdays: 0,
-        },
-      })
+      if (createdCount > 0) {
+        toast.success(
+          `${createdCount} slot${createdCount > 1 ? 's' : ''} created successfully`
+        )
+        form.reset({
+          startTime: roundToNext15Minutes(new Date()),
+          endTime: addMinutes(roundToNext15Minutes(new Date()), 30),
+          doctorId: doctorId,
+          duration: 30,
+          numberOfSlots: 1,
+          recurrence: {
+            recurrenceType: 'once',
+            weekdays: 0,
+          },
+        })
+      }
     } catch (error) {
       console.error('Failed to create slots:', error)
       toast.error(

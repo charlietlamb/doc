@@ -105,13 +105,14 @@ export const createRecurringSlots: AppRouteHandler<
 
     const generatedSlots = generateSlots(rule)
 
-    // Insert all generated slots
-    for (const slot of generatedSlots) {
-      await db.insert(slots).values({
-        ...slot,
-        status: 'available' as const,
-        recurrenceRuleId: rule.id,
-      })
+    if (generatedSlots.length > 0) {
+      await db.insert(slots).values(
+        generatedSlots.map((slot) => ({
+          ...slot,
+          status: 'available' as const,
+          recurrenceRuleId: rule.id,
+        }))
+      )
     }
 
     const response = {

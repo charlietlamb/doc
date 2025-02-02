@@ -12,7 +12,7 @@ const tags = ['Slots']
 const successResponse = z.object({ success: z.boolean() })
 const errorResponse = z.object({ error: z.string() })
 
-export const createSlot = createRoute({
+export const create = createRoute({
   method: 'post',
   path: '/doctors/:doctorId/slots',
   summary: 'Create a new slot',
