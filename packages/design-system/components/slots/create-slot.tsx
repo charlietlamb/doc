@@ -23,7 +23,9 @@ import {
   dateAtom,
   doctorAtom,
 } from '@doc/design-system/atoms/doctor/doctor-atoms'
-
+import { createRecurrence } from '@doc/design-system/actions/slots/create-reccurence'
+import { QUERY_KEYS } from '../../lib/query-keys'
+import { useQueryClient } from '@tanstack/react-query'
 const recurrenceSchema = z.object({
   recurrenceType: z.enum(['once', 'daily', 'weekly']),
   weekdays: z.number().int().min(0).max(127).optional(),
@@ -65,6 +67,7 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
 
   const initialDate = selectedDate || new Date()
   const initialTime = roundToNext15Minutes(initialDate)
+  const queryClient = useQueryClient()
 
   const form = useForm<FormData>({
     resolver: zodResolver(
@@ -126,53 +129,81 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
       startTime.setHours(hours)
       startTime.setMinutes(minutes)
 
-      const slots = Array.from({ length: data.numberOfSlots }, (_, index) => {
-        const slotStartTime = new Date(startTime)
-        slotStartTime.setMinutes(startTime.getMinutes() + index * data.duration)
-
-        const slotEndTime = new Date(slotStartTime)
-        slotEndTime.setMinutes(slotStartTime.getMinutes() + data.duration)
-
-        if (!doctor?.id) {
-          throw new Error('Doctor ID is required')
-        }
-
-        return {
-          startTime: slotStartTime,
-          endTime: slotEndTime,
-          doctorId: doctor.id,
-          date: data.date,
-          time: data.time,
-          duration: data.duration,
-        }
-      })
-
-      let createdCount = 0
-      for (const slot of slots) {
-        try {
-          await createSlot(slot)
-          createdCount++
-        } catch (error) {
-          console.error('Error creating slot:', error)
-          throw error
-        }
+      if (!doctor?.id) {
+        throw new Error('Doctor ID is required')
       }
 
-      if (createdCount > 0) {
-        toast.success(
-          `${createdCount} slot${createdCount > 1 ? 's' : ''} created successfully`
+      if (data.recurrence.recurrenceType === 'once') {
+        // Handle one-time slots
+        const slots = Array.from({ length: data.numberOfSlots }, (_, index) => {
+          const slotStartTime = new Date(startTime)
+          slotStartTime.setMinutes(
+            startTime.getMinutes() + index * data.duration
+          )
+
+          const slotEndTime = new Date(slotStartTime)
+          slotEndTime.setMinutes(slotStartTime.getMinutes() + data.duration)
+
+          return {
+            startTime: slotStartTime,
+            endTime: slotEndTime,
+            doctorId: doctor.id,
+            date: data.date,
+            time: data.time,
+            duration: data.duration,
+          }
+        })
+
+        let createdCount = 0
+        for (const slot of slots) {
+          try {
+            await createSlot(slot)
+            createdCount++
+          } catch (error) {
+            console.error('Error creating slot:', error)
+            throw error
+          }
+        }
+
+        if (createdCount > 0) {
+          toast.success(
+            `${createdCount} slot${createdCount > 1 ? 's' : ''} created successfully`
+          )
+        }
+      } else {
+        const endTime = new Date(startTime)
+        endTime.setMinutes(
+          startTime.getMinutes() + data.numberOfSlots * data.duration
         )
-        form.reset({
-          date: new Date(),
-          time: roundToNext15Minutes(new Date()),
-          duration: 30,
-          numberOfSlots: 1,
-          recurrence: {
-            recurrenceType: 'once',
-            weekdays: 0,
-          },
+
+        await createRecurrence({
+          doctorId: doctor.id,
+          startTime,
+          endTime,
+          recurrenceType: data.recurrence.recurrenceType,
+          weekdays:
+            data.recurrence.recurrenceType === 'weekly'
+              ? data.recurrence.weekdays
+              : undefined,
+          endDate: data.recurrence.endDate,
+        })
+
+        toast.success('Recurring slots created successfully')
+        queryClient.invalidateQueries({
+          queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
         })
       }
+
+      form.reset({
+        date: new Date(),
+        time: roundToNext15Minutes(new Date()),
+        duration: 30,
+        numberOfSlots: 1,
+        recurrence: {
+          recurrenceType: 'once',
+          weekdays: 0,
+        },
+      })
     } catch (error) {
       console.error('=== Form Submission Error ===')
       console.error('Error details:', error)

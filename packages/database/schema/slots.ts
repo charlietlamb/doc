@@ -43,6 +43,8 @@ export const slotRouteSchema = z.object({
   doctorId: z.string().min(1, 'Doctor is required'),
   startTime: z.number(),
   endTime: z.number(),
+  recurrenceRuleId: z.string().optional(),
+  status: z.enum(['available', 'booked']).optional(),
 })
 
 export const slotFormSchema = z.object({
@@ -52,4 +54,6 @@ export const slotFormSchema = z.object({
   duration: z.number().refine((val) => val === 15 || val === 30, {
     message: 'Duration must be either 15 or 30 minutes',
   }),
+  recurrenceRuleId: z.string().optional(),
+  status: z.enum(['available', 'booked']).optional(),
 })

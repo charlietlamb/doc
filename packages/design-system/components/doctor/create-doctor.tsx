@@ -22,7 +22,11 @@ import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
 import { QUERY_KEYS } from '@doc/design-system/lib/query-keys'
 
-export default function CreateDoctor() {
+export default function CreateDoctor({
+  onSuccess,
+}: {
+  onSuccess?: () => void
+}) {
   const form = useForm<DoctorForm>({
     resolver: zodResolver(doctorFormSchema),
     defaultValues: {
@@ -56,6 +60,7 @@ export default function CreateDoctor() {
       )
     } finally {
       setLoading(false)
+      onSuccess?.()
     }
   }
 

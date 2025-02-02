@@ -8,8 +8,7 @@ export async function getBookedSlots(
   const response = await client.doctors[':doctorId']['bookings'].$get({
     param: { doctorId },
     query: {
-      startDate: date,
-      endDate: date,
+      date: date,
     },
   })
 

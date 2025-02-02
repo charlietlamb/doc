@@ -6,16 +6,18 @@ import {
   doctorsAtom,
 } from '@doc/design-system/atoms/doctor/doctor-atoms'
 import { useEffect } from 'react'
-import { Doctor } from '@doc/database/schema'
+import { Doctor, Slot } from '@doc/database/schema'
 import {
   availableSlotsAtom,
   bookedSlotsAtom,
+  recurrenceRulesAtom,
 } from '@doc/design-system/atoms/doctor/doctor-atoms'
 import { useSetAtom } from 'jotai'
 import { useQuery } from '@tanstack/react-query'
 import { QUERY_KEYS } from '../../lib/query-keys'
 import { getBookedSlots } from '@doc/design-system/actions/slots/get-booked-slots'
 import { getAvailableSlots } from '@doc/design-system/actions/slots/get-available-slots'
+import { getReccurenceRules } from '@doc/design-system/actions/slots/get-reccurence-rules'
 import { getDoctors } from '../../actions/doctors/get-doctors'
 
 export default function AppProvider({
@@ -30,14 +32,19 @@ export default function AppProvider({
   const date = useAtomValue(dateAtom)
   const setAvailableSlots = useSetAtom(availableSlotsAtom)
   const setBookedSlots = useSetAtom(bookedSlotsAtom)
+  const setRecurrenceRules = useSetAtom(recurrenceRulesAtom)
 
-  const { data: bookedSlots } = useQuery({
+  const { data: bookedSlots, refetch: refetchBookedSlots } = useQuery({
     queryKey: [QUERY_KEYS.BOOKED_SLOTS, doctor?.id],
     queryFn: () => doctor && getBookedSlots(doctor.id, date.toISOString()),
   })
-  const { data: availableSlots } = useQuery({
+  const { data: availableSlots, refetch: refetchAvailableSlots } = useQuery({
     queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
     queryFn: () => doctor && getAvailableSlots(doctor.id, date.toISOString()),
+  })
+  const { data: recurrenceRules, refetch: refetchRecurrenceRules } = useQuery({
+    queryKey: [QUERY_KEYS.RECCURENCE_RULES, doctor?.id],
+    queryFn: () => doctor && getReccurenceRules(doctor.id, date),
   })
 
   const { data: fetchedDoctors } = useQuery({
@@ -47,17 +54,66 @@ export default function AppProvider({
   })
 
   useEffect(() => {
+    if (doctor) {
+      refetchBookedSlots()
+      refetchAvailableSlots()
+      refetchRecurrenceRules()
+    }
+  }, [date])
+
+  useEffect(() => {
     setBookedSlots(
       bookedSlots?.sort(
         (a, b) => a.startTime.getTime() - b.startTime.getTime()
       ) || []
     )
-    setAvailableSlots(
-      availableSlots?.sort(
-        (a, b) => a.startTime.getTime() - b.startTime.getTime()
-      ) || []
+    const processedRecurrenceRules =
+      recurrenceRules?.map((rule) => ({
+        ...rule,
+        startTime: new Date(
+          date.setHours(rule.startTime.getHours(), rule.startTime.getMinutes())
+        ),
+        endTime: new Date(
+          date.setHours(rule.endTime.getHours(), rule.endTime.getMinutes())
+        ),
+        endDate: rule.endDate ? new Date(rule.endDate) : null,
+        recurrenceType: rule.recurrenceType || 'daily',
+        weekdays: rule.weekdays || 0,
+      })) || []
+
+    const filteredRecurrenceRules = processedRecurrenceRules.filter((rule) => {
+      if (!rule.endDate || rule.endDate.getTime() < new Date().getTime()) {
+        return false
+      }
+
+      return !bookedSlots?.some((slot) =>
+        doTimesOverlap(
+          rule.startTime,
+          rule.endTime,
+          slot.startTime,
+          slot.endTime
+        )
+      )
+    })
+
+    setRecurrenceRules(filteredRecurrenceRules)
+
+    const combinedAvailableSlots = [
+      ...(availableSlots?.map((slot) => ({
+        ...slot,
+        isRecurrence: false,
+      })) || []),
+      ...(filteredRecurrenceRules?.map((rule) => ({
+        ...rule,
+        isRecurrence: true,
+        recurrenceRuleId: rule.id,
+      })) || []),
+    ] as (Slot & { isRecurrence: boolean })[]
+    const sortedAvailableSlots = combinedAvailableSlots.sort(
+      (a, b) => a.startTime.getTime() - b.startTime.getTime()
     )
-  }, [bookedSlots, availableSlots])
+    setAvailableSlots(sortedAvailableSlots || [])
+  }, [bookedSlots, availableSlots, recurrenceRules, date])
 
   useEffect(() => {
     if (fetchedDoctors) {
@@ -69,4 +125,13 @@ export default function AppProvider({
   }, [fetchedDoctors])
 
   return children
+}
+
+function doTimesOverlap(
+  start1: Date,
+  end1: Date,
+  start2: Date,
+  end2: Date
+): boolean {
+  return start1 < end2 && end1 > start2
 }

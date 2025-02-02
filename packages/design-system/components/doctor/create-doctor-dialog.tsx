@@ -7,14 +7,16 @@ import {
   DialogTrigger,
 } from '../ui/dialog'
 import CreateDoctor from './create-doctor'
+import { useState } from 'react'
 
 export default function CreateDoctorDialog({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const [open, setOpen] = useState(false)
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -23,7 +25,7 @@ export default function CreateDoctorDialog({
             Create a new doctor to add appointments for
           </DialogDescription>
         </DialogHeader>
-        <CreateDoctor />
+        <CreateDoctor onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   )

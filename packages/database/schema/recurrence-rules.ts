@@ -17,7 +17,7 @@ export const recurrenceRules = pgTable('recurrence_rules', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
-const recurrenceRuleSchema = createSelectSchema(recurrenceRules)
+export const recurrenceRuleSchema = createSelectSchema(recurrenceRules)
 
 export const insertRecurrenceRuleSchema = createInsertSchema(recurrenceRules)
 

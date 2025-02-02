@@ -7,4 +7,5 @@ const router = createRouter()
   .openapi(routes.getDoctors, handlers.getDoctors)
   .openapi(routes.getBookedSlots, handlers.getBookedSlots)
   .openapi(routes.getAvailableSlots, handlers.getAvailableSlots)
+  .openapi(routes.getReccurenceRules, handlers.getReccurenceRules)
 export default router

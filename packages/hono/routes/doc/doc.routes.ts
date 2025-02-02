@@ -5,6 +5,7 @@ import {
   selectDoctorSchema,
 } from '@doc/database/schema/doctors'
 import { selectSlotSchema } from '@doc/database/schema/slots'
+import { recurrenceRuleSchema } from '@doc/database/schema/recurrence-rules'
 
 const tags = ['Doctors']
 
@@ -82,8 +83,7 @@ export const getBookedSlots = createRoute({
   tags,
   request: {
     query: z.object({
-      startDate: z.string().optional(),
-      endDate: z.string().optional(),
+      date: z.string(),
     }),
   },
   responses: {
@@ -139,3 +139,35 @@ export const getAvailableSlots = createRoute({
 })
 
 export type GetAvailableSlotsRoute = typeof getAvailableSlots
+
+export const getReccurenceRules = createRoute({
+  path: '/doctors/:doctorId/recurrence_rules',
+  method: 'get',
+  summary: 'Get reccurence rules',
+  tags,
+  request: {
+    query: z.object({
+      date: z.string(),
+    }),
+  },
+  responses: {
+    [HttpStatusCodes.OK]: {
+      content: {
+        'application/json': {
+          schema: z.array(recurrenceRuleSchema),
+        },
+      },
+      description: 'Reccurence rules.',
+    },
+    [HttpStatusCodes.INTERNAL_SERVER_ERROR]: {
+      content: {
+        'application/json': {
+          schema: errorResponse,
+        },
+      },
+      description: 'Failed to get reccurence rules.',
+    },
+  },
+})
+
+export type GetReccurenceRulesRoute = typeof getReccurenceRules

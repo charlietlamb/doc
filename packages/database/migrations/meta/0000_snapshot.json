@@ -1,5 +1,5 @@
 {
-  "id": "8ca30997-e7be-47b1-98be-463d9a336792",
+  "id": "2150ef63-b793-4434-9be8-e1c1726b32c6",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -185,6 +185,12 @@
           "notNull": true,
           "default": "'available'"
         },
+        "recurrence_rule_id": {
+          "name": "recurrence_rule_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -202,12 +208,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "slots_doctor_id_doctors_id_fk": {
-          "name": "slots_doctor_id_doctors_id_fk",
+        "slots_recurrence_rule_id_recurrence_rules_id_fk": {
+          "name": "slots_recurrence_rule_id_recurrence_rules_id_fk",
           "tableFrom": "slots",
-          "tableTo": "doctors",
+          "tableTo": "recurrence_rules",
           "columnsFrom": [
-            "doctor_id"
+            "recurrence_rule_id"
           ],
           "columnsTo": [
             "id"
@@ -216,6 +222,77 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.recurrence_rules": {
+      "name": "recurrence_rules",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "doctor_id": {
+          "name": "doctor_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "recurrence_type": {
+          "name": "recurrence_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weekdays": {
+          "name": "weekdays",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "end_date": {
+          "name": "end_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

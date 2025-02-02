@@ -3,7 +3,6 @@ import {
   BookSlotRoute,
   CreateSlotRoute,
   CreateRecurringSlotsRoute,
-  GetAvailableSlotsRoute,
 } from '@doc/hono/routes/slots/slots.routes'
 import { AppRouteHandler } from '@doc/hono/lib/types'
 import { slots } from '@doc/database/schema/slots'
@@ -26,11 +25,9 @@ async function checkSlotOverlap(
       and(
         eq(slots.doctorId, doctorId),
         sql`(
-          (${slots.startTime} < ${endTime} AND ${slots.endTime} > ${startTime})
+          (${startTime} >= ${slots.startTime} AND ${startTime} < ${slots.endTime})
           OR
-          (${slots.startTime} <= ${startTime} AND ${slots.endTime} >= ${endTime})
-          OR
-          (${slots.startTime} >= ${startTime} AND ${slots.endTime} <= ${endTime})
+          (${endTime} > ${slots.startTime} AND ${endTime} <= ${slots.endTime})
         )`
       )
     )
@@ -40,12 +37,12 @@ async function checkSlotOverlap(
 
 export const create: AppRouteHandler<CreateSlotRoute> = async (c) => {
   const slot = await c.req.valid('json')
-  const startTime = new Date(slot.startTime)
-  const endTime = new Date(slot.endTime)
-
   try {
-    // Check for overlapping slots
-    const hasOverlap = await checkSlotOverlap(slot.doctorId, startTime, endTime)
+    const hasOverlap = await checkSlotOverlap(
+      slot.doctorId,
+      new Date(slot.startTime),
+      new Date(slot.endTime)
+    )
     if (hasOverlap) {
       return c.json(
         { error: 'This time slot overlaps with existing slots' },
@@ -55,9 +52,8 @@ export const create: AppRouteHandler<CreateSlotRoute> = async (c) => {
 
     await db.insert(slots).values({
       ...slot,
-      startTime,
-      endTime,
-      status: 'available',
+      startTime: new Date(slot.startTime),
+      endTime: new Date(slot.endTime),
     })
     return c.json({ success: true }, HttpStatusCodes.OK)
   } catch (error) {
@@ -89,7 +85,6 @@ export const createRecurringSlots: AppRouteHandler<
   const data = await c.req.valid('json')
 
   try {
-    // Create the recurrence rule
     const [rule] = await db
       .insert(recurrenceRules)
       .values({
@@ -196,61 +191,4 @@ function generateSlots(rule: RecurrenceRule) {
   }
 
   return generatedSlots
-}
-
-export const getAvailableSlots: AppRouteHandler<
-  GetAvailableSlotsRoute
-> = async (c) => {
-  const doctorId = c.req.param('doctorId')
-  const dateStr = c.req.query('date')
-
-  if (!dateStr) {
-    return c.json({ error: 'Date is required' }, HttpStatusCodes.BAD_REQUEST)
-  }
-
-  try {
-    const date = new Date(dateStr)
-    const startOfDay = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate()
-    )
-    const endOfDay = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      23,
-      59,
-      59,
-      999
-    )
-
-    const availableSlots = await db
-      .select({
-        doctorId: slots.doctorId,
-        startTime: slots.startTime,
-        endTime: slots.endTime,
-      })
-      .from(slots)
-      .where(
-        and(
-          eq(slots.doctorId, doctorId),
-          eq(slots.status, 'available'),
-          sql`${slots.startTime} >= ${startOfDay} AND ${slots.startTime} <= ${endOfDay}`
-        )
-      )
-
-    const formattedSlots = availableSlots.map((slot) => ({
-      doctorId: slot.doctorId,
-      startTime: slot.startTime.getTime(),
-      endTime: slot.endTime.getTime(),
-    }))
-
-    return c.json(formattedSlots, HttpStatusCodes.OK)
-  } catch (error) {
-    return c.json(
-      { error: 'Failed to get available slots' },
-      HttpStatusCodes.INTERNAL_SERVER_ERROR
-    )
-  }
 }
