@@ -19,10 +19,10 @@ export default function CreateSlotDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Slot</DialogTitle>
+          <DialogDescription>
+            Create a new appointment slot with recurrence options
+          </DialogDescription>
         </DialogHeader>
-        <DialogDescription>
-          Create a new appointment slot with recurrence options
-        </DialogDescription>
         <CreateSlot />
       </DialogContent>
     </Dialog>

@@ -1,13 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '../ui/card'
 import { Input } from '../ui/input'
 import { Search } from 'lucide-react'
 import { ScrollArea } from '../ui/scroll-area'
@@ -32,17 +25,20 @@ export function Doctors() {
   })
 
   return (
-    <Card className="w-full border-none px-4">
-      <CardHeader className="flex flex-row justify-between items-center">
+    <section className="w-full p-6 container bg-background rounded-lg shadow-sm">
+      <header className="flex flex-row justify-between items-center mb-6">
         <div>
-          <CardTitle className="font-heading">Doctors</CardTitle>
-          <CardDescription>View and manage all doctors</CardDescription>
+          <h1 className="text-2xl font-heading font-bold">Doctors</h1>
+          <p className="text-sm text-muted-foreground">
+            View and manage all doctors
+          </p>
         </div>
         <CreateDoctorDialog>
           <Button variant="shine">Add Doctor</Button>
         </CreateDoctorDialog>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      </header>
+
+      <div className="flex flex-col gap-4">
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -52,12 +48,13 @@ export function Doctors() {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+
         <ScrollArea className="h-[600px]">
-          <div className="grid gap-4">
+          <ul className="grid gap-4">
             {filteredDoctors.map((doctor) => (
-              <Card
+              <li
                 key={doctor.id}
-                className="flex items-center p-4 transition-colors hover:bg-muted/50"
+                className="flex items-center p-4 transition-colors hover:bg-muted/50 border rounded-lg"
               >
                 <Avatar className="h-12 w-12">
                   <AvatarImage
@@ -66,9 +63,9 @@ export function Doctors() {
                   <AvatarFallback>{`${doctor.firstName[0]}${doctor.lastName[0]}`}</AvatarFallback>
                 </Avatar>
                 <div className="ml-4 space-y-1">
-                  <p className="text-sm font-medium leading-none font-heading">
+                  <h2 className="text-sm font-medium leading-none font-heading">
                     {doctor.firstName} {doctor.lastName}
-                  </p>
+                  </h2>
                   <p className="text-sm text-muted-foreground">
                     {doctor.email}
                   </p>
@@ -76,12 +73,12 @@ export function Doctors() {
                     @{doctor.username}
                   </p>
                 </div>
-              </Card>
+              </li>
             ))}
-          </div>
+          </ul>
         </ScrollArea>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   )
 }
 

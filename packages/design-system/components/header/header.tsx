@@ -14,7 +14,7 @@ export default function Header() {
     <div className="pl-4 flex justify-between items-center border-b">
       <Link
         href="/"
-        className="flex items-center gap-2 text-primary font-heading"
+        className="flex items-center gap-2 text-muted-foreground font-heading hover:text-foreground transition-colors duration-300"
       >
         <Activity className="w-4 h-4" />
         Lightwork
