@@ -2,6 +2,8 @@ import React from 'react'
 import Slots from '@doc/design-system/components/slots/slots'
 import { getDoctors } from '@doc/design-system/actions/doctors/get-doctors'
 
+export const dynamic = 'force-dynamic'
+
 export default async function SlotsPage() {
   const doctors = await getDoctors()
   const doctorsWithDates = doctors.map((doctor) => ({

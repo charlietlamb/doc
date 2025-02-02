@@ -37,14 +37,14 @@ const recurrenceSchema = z.object({
 interface FormData {
   date: Date
   time: Date
-  doctorId?: string
   duration: 15 | 30
   numberOfSlots: number
   recurrence: z.infer<typeof recurrenceSchema>
+  doctorId: string
 }
 
 interface CreateSlotProps {
-  doctorId?: string
+  doctorId: string
   selectedDate?: Date
 }
 
@@ -66,35 +66,12 @@ function calculateMaxSlots(startTime: Date, duration: number): number {
   return Math.floor(availableMinutes / duration)
 }
 
-export function CreateSlot({
-  doctorId: initialDoctorId,
-  selectedDate,
-}: CreateSlotProps) {
+export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [maxSlots, setMaxSlots] = useState(1)
-  const [doctors, setDoctors] = useState<Doctor[]>([])
 
   const initialDate = selectedDate || new Date()
   const initialTime = roundToNext15Minutes(initialDate)
-
-  useEffect(() => {
-    async function fetchDoctors() {
-      try {
-        const fetchedDoctors = await getDoctors()
-        setDoctors(fetchedDoctors)
-
-        // If no initial doctorId is provided and we have doctors, set the first one
-        if (!initialDoctorId && fetchedDoctors.length > 0) {
-          form.setValue('doctorId', fetchedDoctors[0].id)
-        }
-      } catch (error) {
-        console.error('Failed to fetch doctors:', error)
-        toast.error('Failed to load doctors')
-      }
-    }
-
-    fetchDoctors()
-  }, [initialDoctorId])
 
   const form = useForm<FormData>({
     resolver: zodResolver(
@@ -106,14 +83,15 @@ export function CreateSlot({
         }),
         numberOfSlots: z.number().min(1),
         recurrence: recurrenceSchema,
+        doctorId: z.string(),
       })
     ),
     defaultValues: {
       date: initialDate,
       time: initialTime,
-      doctorId: initialDoctorId,
       duration: 30,
       numberOfSlots: 1,
+      doctorId,
       recurrence: {
         recurrenceType: 'once',
         weekdays: 0,
@@ -136,6 +114,11 @@ export function CreateSlot({
     }
   }, [date, duration, form])
 
+  // Add effect to update doctorId in form when prop changes
+  useEffect(() => {
+    form.setValue('doctorId', doctorId)
+  }, [doctorId, form])
+
   const onSubmit = async (data: FormData) => {
     console.log('=== Form Submission Debug Logs ===')
     console.log('Raw form data:', {
@@ -146,8 +129,7 @@ export function CreateSlot({
     })
 
     try {
-      const currentDoctorId = data.doctorId
-      if (!currentDoctorId) {
+      if (!doctorId) {
         console.log('Submission blocked: Missing doctor ID')
         toast.error('Please select a doctor first')
         return
@@ -190,7 +172,7 @@ export function CreateSlot({
 
         return {
           ...data,
-          doctorId: currentDoctorId,
+          doctorId,
           startTime: slotStartTime,
           endTime: slotEndTime,
         }
@@ -240,7 +222,6 @@ export function CreateSlot({
         form.reset({
           date: new Date(),
           time: roundToNext15Minutes(new Date()),
-          doctorId: data.doctorId,
           duration: 30,
           numberOfSlots: 1,
           recurrence: {
@@ -296,15 +277,6 @@ export function CreateSlot({
           console.log('Form clicked', e.target)
         }}
       >
-        <div className="space-y-4">
-          <RequiredLabel>Doctor</RequiredLabel>
-          <DoctorSelect
-            doctors={doctors}
-            value={form.watch('doctorId')}
-            onSelect={(value) => form.setValue('doctorId', value)}
-          />
-        </div>
-
         <div className="grid grid-cols-2 gap-4">
           <DatePicker
             control={form.control}
