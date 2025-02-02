@@ -16,10 +16,7 @@ import {
 } from '@doc/design-system/components/ui/card'
 import { useForm } from 'react-hook-form'
 import { format } from 'date-fns'
-import { Form } from '@doc/design-system/components/ui/form'
-import DatePicker from '@doc/design-system/components/form/date-picker'
 import { toast } from 'sonner'
-import { Button } from '@doc/design-system/components/ui/button'
 
 export interface SlotsPageProps {
   doctors: Doctor[]

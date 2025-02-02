@@ -59,7 +59,7 @@ export const create = createRoute({
   },
 })
 
-export type CreateSlotRoute = typeof createSlot
+export type CreateSlotRoute = typeof create
 
 export const createRecurringSlots = createRoute({
   method: 'post',
