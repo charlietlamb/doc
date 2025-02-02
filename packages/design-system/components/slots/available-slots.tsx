@@ -12,19 +12,18 @@ import { useRouter } from 'next/navigation'
 import DatePicker from '@doc/design-system/components/form/date-picker'
 import { useForm } from 'react-hook-form'
 import { Form } from '@doc/design-system/components/ui/form'
-
-interface AvailableSlotsProps {
-  doctorId?: string
-}
+import { useAtomValue } from 'jotai'
+import { doctorAtom } from '@doc/design-system/atoms/doctor/doctor-atoms'
 
 interface FormData {
   date: Date
 }
 
-export function AvailableSlots({ doctorId }: AvailableSlotsProps) {
+export function AvailableSlots() {
   const [slots, setSlots] = useState<Slot[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [bookingId, setBookingId] = useState<string>()
+  const doctor = useAtomValue(doctorAtom)
   const router = useRouter()
 
   const form = useForm<FormData>({
@@ -37,11 +36,11 @@ export function AvailableSlots({ doctorId }: AvailableSlotsProps) {
 
   useEffect(() => {
     async function fetchSlots() {
-      if (!doctorId) return
+      if (!doctor?.id) return
       setIsLoading(true)
       try {
         const data = await getAvailableSlots(
-          doctorId,
+          doctor.id,
           format(selectedDate, 'yyyy-MM-dd')
         )
         setSlots(
@@ -61,16 +60,16 @@ export function AvailableSlots({ doctorId }: AvailableSlotsProps) {
     }
 
     fetchSlots()
-  }, [doctorId, selectedDate])
+  }, [doctor?.id, selectedDate])
 
   async function handleBook(slotId: string) {
-    if (!doctorId) return
+    if (!doctor?.id) return
     setBookingId(slotId)
     try {
       await bookSlot(slotId)
       toast.success('Slot booked successfully')
       const data = await getAvailableSlots(
-        doctorId,
+        doctor.id,
         format(selectedDate, 'yyyy-MM-dd')
       )
       setSlots(
@@ -98,7 +97,7 @@ export function AvailableSlots({ doctorId }: AvailableSlotsProps) {
     )
   }
 
-  if (!doctorId) {
+  if (!doctor?.id) {
     return (
       <div className="text-center py-4 text-muted-foreground">
         Please select a doctor

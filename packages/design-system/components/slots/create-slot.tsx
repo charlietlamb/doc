@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { slotFormSchema } from '@doc/database/schema/slots'
 import { Button } from '@doc/design-system/components/ui/button'
-import { Form, FormField } from '@doc/design-system/components/ui/form'
+import { Form } from '@doc/design-system/components/ui/form'
 import { toast } from 'sonner'
 import { createSlot } from '@doc/design-system/actions/slots/create-slot'
 import DatePicker from '@doc/design-system/components/form/date-picker'
@@ -20,13 +20,11 @@ import {
 } from '@doc/design-system/components/ui/select'
 import { Checkbox } from '@doc/design-system/components/ui/checkbox'
 import { Label } from '@doc/design-system/components/ui/label'
-import { addMinutes, endOfDay, differenceInMinutes } from 'date-fns'
+import { endOfDay, differenceInMinutes } from 'date-fns'
 import { z } from 'zod'
 import RequiredLabel from '../form/required-label'
-import React from 'react'
-import { DoctorSelect } from './doctor-select'
-import { getDoctors } from '@doc/design-system/actions/doctors/get-doctors'
-import { Doctor } from '@doc/database/schema/doctors'
+import { useAtomValue } from 'jotai'
+import { doctorAtom } from '@doc/design-system/atoms/doctor/doctor-atoms'
 
 const recurrenceSchema = z.object({
   recurrenceType: z.enum(['once', 'daily', 'weekly']),
@@ -41,11 +39,6 @@ interface FormData {
   numberOfSlots: number
   recurrence: z.infer<typeof recurrenceSchema>
   doctorId: string
-}
-
-interface CreateSlotProps {
-  doctorId: string
-  selectedDate?: Date
 }
 
 function roundToNext15Minutes(date: Date = new Date()) {
@@ -66,9 +59,10 @@ function calculateMaxSlots(startTime: Date, duration: number): number {
   return Math.floor(availableMinutes / duration)
 }
 
-export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
+export function CreateSlot({ selectedDate }: { selectedDate: Date }) {
   const [isLoading, setIsLoading] = useState(false)
   const [maxSlots, setMaxSlots] = useState(1)
+  const doctor = useAtomValue(doctorAtom)
 
   const initialDate = selectedDate || new Date()
   const initialTime = roundToNext15Minutes(initialDate)
@@ -102,7 +96,10 @@ export function CreateSlot({ doctorId, selectedDate }: CreateSlotProps) {
   const recurrence = form.watch('recurrence')
   const duration = form.watch('duration')
   const date = form.watch('date')
-  const time = form.watch('time')
+
+  useEffect(() => {
+    form.setValue('doctorId', doctor?.id ?? '')
+  }, [doctor])
 
   useEffect(() => {
     const newMaxSlots = calculateMaxSlots(new Date(date), duration)

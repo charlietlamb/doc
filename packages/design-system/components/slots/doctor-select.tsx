@@ -6,16 +6,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@doc/design-system/components/ui/select'
+import { doctorsAtom } from '@doc/design-system/atoms/doctor/doctor-atoms'
+import { useAtom, useAtomValue } from 'jotai'
+import { doctorAtom } from '@doc/design-system/atoms/doctor/doctor-atoms'
 
-interface DoctorSelectProps {
-  doctors: Doctor[]
-  onSelect: (value: string) => void
-  value?: string
-}
-
-export function DoctorSelect({ doctors, onSelect, value }: DoctorSelectProps) {
+export function DoctorSelect() {
+  const doctors = useAtomValue(doctorsAtom)
+  const [doctor, setDoctor] = useAtom(doctorAtom)
   return (
-    <Select onValueChange={onSelect} value={value}>
+    <Select
+      onValueChange={(value) => {
+        setDoctor(doctors.find((doctor) => doctor.id === value) || null)
+      }}
+      value={doctor?.id}
+      defaultValue={doctor?.id}
+    >
       <SelectTrigger className="w-full">
         <SelectValue placeholder="Select a doctor" />
       </SelectTrigger>

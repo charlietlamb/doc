@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Doctor } from '@doc/database/schema/doctors'
 import {
   Card,
   CardContent,
@@ -14,13 +13,12 @@ import { Search } from 'lucide-react'
 import { ScrollArea } from '../ui/scroll-area'
 import { Avatar } from '../ui/avatar'
 import { AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
+import { useAtomValue } from 'jotai'
+import { doctorsAtom } from '@doc/design-system/atoms/doctor/doctor-atoms'
 
-interface DoctorsProps {
-  doctors: Doctor[]
-}
-
-export function Doctors({ doctors }: DoctorsProps) {
+export function Doctors() {
   const [searchQuery, setSearchQuery] = useState('')
+  const doctors = useAtomValue(doctorsAtom)
 
   const filteredDoctors = doctors.filter((doctor) => {
     const searchTerm = searchQuery.toLowerCase()
