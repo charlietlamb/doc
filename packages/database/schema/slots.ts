@@ -34,7 +34,10 @@ export const insertSlotSchema = createInsertSchema(slots)
 
 export type Slot = z.infer<typeof selectSlotSchema>
 export type InsertSlot = z.infer<typeof insertSlotSchema>
-export type SlotForm = Omit<InsertSlot, 'id' | 'createdAt' | 'updatedAt'>
+export type SlotForm = z.infer<typeof slotFormSchema> & {
+  startTime: Date
+  endTime: Date
+}
 
 export const slotRouteSchema = z.object({
   doctorId: z.string().min(1, 'Doctor is required'),
@@ -44,10 +47,9 @@ export const slotRouteSchema = z.object({
 
 export const slotFormSchema = z.object({
   doctorId: z.string().min(1, 'Doctor is required'),
-  startTime: z.date().refine((date) => date > new Date(), {
-    message: 'Start time must be in the future',
-  }),
-  endTime: z.date().refine((date) => date > new Date(), {
-    message: 'End time must be in the future',
+  date: z.date(),
+  time: z.date(),
+  duration: z.number().refine((val) => val === 15 || val === 30, {
+    message: 'Duration must be either 15 or 30 minutes',
   }),
 })
