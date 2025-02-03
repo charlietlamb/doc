@@ -83,8 +83,6 @@ export default function AppProvider({
         weekdays: rule.weekdays || 0,
       })) || []
 
-    console.log(processedRecurrenceRules)
-
     const filteredRecurrenceRules = processedRecurrenceRules.filter((rule) => {
       if (!rule.endDate || rule.endDate.getTime() < new Date().getTime()) {
         return false
@@ -100,18 +98,27 @@ export default function AppProvider({
         }
       }
 
-      return (
-        !bookedSlots?.some((slot) =>
+      if (
+        bookedSlots?.some((slot) =>
           doTimesOverlap(
             rule.startTime,
             rule.endTime,
             slot.startTime,
             slot.endTime
           )
-        ) &&
+        )
+      ) {
+        return false
+      }
+
+      if (
         rule.recurrenceType === 'weekly' &&
-        hasWeekday(rule.weekdays, date.getDay() as WeekdayNumber)
-      )
+        !hasWeekday(rule.weekdays, date.getDay() as WeekdayNumber)
+      ) {
+        return false
+      }
+
+      return true
     })
 
     console.log(filteredRecurrenceRules)
