@@ -1,5 +1,5 @@
 {
-  "id": "2150ef63-b793-4434-9be8-e1c1726b32c6",
+  "id": "caebbcdd-585d-4ba8-bcb4-ea848c2e7f90",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -12,7 +12,8 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "slot_id": {
           "name": "slot_id",
@@ -54,7 +55,38 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "slot_id_idx": {
+          "name": "slot_id_idx",
+          "columns": [
+            {
+              "expression": "slot_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "patient_id_idx": {
+          "name": "patient_id_idx",
+          "columns": [
+            {
+              "expression": "patient_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "bookings_slot_id_slots_id_fk": {
           "name": "bookings_slot_id_slots_id_fk",
@@ -206,7 +238,44 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "doctor_id_idx": {
+          "name": "doctor_id_idx",
+          "columns": [
+            {
+              "expression": "doctor_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "time_range_idx": {
+          "name": "time_range_idx",
+          "columns": [
+            {
+              "expression": "start_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "end_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "slots_recurrence_rule_id_recurrence_rules_id_fk": {
           "name": "slots_recurrence_rule_id_recurrence_rules_id_fk",

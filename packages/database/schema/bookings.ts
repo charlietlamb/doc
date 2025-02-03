@@ -2,12 +2,14 @@ import { timestamp, pgTable, text, index } from 'drizzle-orm/pg-core'
 import { createSelectSchema, createInsertSchema } from 'drizzle-zod'
 import { z } from 'zod'
 import { slots } from './slots'
-import { relations } from 'drizzle-orm'
+import { relations, sql } from 'drizzle-orm'
 
 export const bookings = pgTable(
   'bookings',
   {
-    id: text('id').primaryKey(),
+    id: text('id')
+      .primaryKey()
+      .default(sql`gen_random_uuid()`),
     slotId: text('slot_id')
       .notNull()
       .references(() => slots.id),

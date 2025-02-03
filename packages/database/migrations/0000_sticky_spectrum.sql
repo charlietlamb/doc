@@ -1,5 +1,5 @@
 CREATE TABLE "bookings" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" text PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"slot_id" text NOT NULL,
 	"patient_id" text NOT NULL,
 	"reason" text NOT NULL,
@@ -44,4 +44,8 @@ CREATE TABLE "recurrence_rules" (
 );
 --> statement-breakpoint
 ALTER TABLE "bookings" ADD CONSTRAINT "bookings_slot_id_slots_id_fk" FOREIGN KEY ("slot_id") REFERENCES "public"."slots"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "slots" ADD CONSTRAINT "slots_recurrence_rule_id_recurrence_rules_id_fk" FOREIGN KEY ("recurrence_rule_id") REFERENCES "public"."recurrence_rules"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "slots" ADD CONSTRAINT "slots_recurrence_rule_id_recurrence_rules_id_fk" FOREIGN KEY ("recurrence_rule_id") REFERENCES "public"."recurrence_rules"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "slot_id_idx" ON "bookings" USING btree ("slot_id");--> statement-breakpoint
+CREATE INDEX "patient_id_idx" ON "bookings" USING btree ("patient_id");--> statement-breakpoint
+CREATE INDEX "doctor_id_idx" ON "slots" USING btree ("doctor_id");--> statement-breakpoint
+CREATE INDEX "time_range_idx" ON "slots" USING btree ("start_time","end_time");

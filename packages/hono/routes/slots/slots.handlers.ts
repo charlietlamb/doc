@@ -56,14 +56,6 @@ export const create: AppRouteHandler<CreateSlotRoute> = async (c) => {
       startTime: new Date(slot.startTime),
       endTime: new Date(slot.endTime),
     })
-    if (slot.status === 'booked') {
-      await db.insert(bookings).values({
-        slotId: slot.id,
-        patientId: slot.patientId,
-        reason: slot.reason,
-        bookingTime: new Date(),
-      })
-    }
     return c.json({ success: true }, HttpStatusCodes.OK)
   } catch (error) {
     console.error(error)
