@@ -197,9 +197,6 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
         }
 
         toast.success('Recurring slots created successfully')
-        queryClient.invalidateQueries({
-          queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
-        })
       }
 
       form.reset({
@@ -225,6 +222,9 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
       )
     } finally {
       console.log('Form submission completed')
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
+      })
       setIsLoading(false)
       onSuccess?.()
     }
