@@ -225,6 +225,9 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
       })
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.RECCURENCE_RULES, doctor?.id],
+      })
       setIsLoading(false)
       onSuccess?.()
     }
