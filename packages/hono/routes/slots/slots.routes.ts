@@ -65,12 +65,12 @@ export const createRecurringSlots = createRoute({
   method: 'post',
   path: '/doctors/:doctorId/recurring-slots',
   summary: 'Create recurring slots for a doctor',
-  tags,
+  tags: ['slots'],
   request: {
     params: z.object({
       doctorId: z.string(),
     }),
-    body: jsonContent(recurrenceRouteSchema, 'Reccurance route schema'),
+    body: jsonContent(recurrenceRouteSchema, 'Recurrence route schema'),
   },
   responses: {
     [HttpStatusCodes.OK]: {
@@ -80,6 +80,14 @@ export const createRecurringSlots = createRoute({
         },
       },
       description: 'Recurring slots created successfully',
+    },
+    [HttpStatusCodes.CONFLICT]: {
+      content: {
+        'application/json': {
+          schema: errorResponse,
+        },
+      },
+      description: 'Slot overlaps with existing slots or recurrence rules',
     },
     [HttpStatusCodes.INTERNAL_SERVER_ERROR]: {
       content: {

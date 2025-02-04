@@ -121,8 +121,6 @@ export default function AppProvider({
       return true
     })
 
-    console.log(filteredRecurrenceRules)
-
     setRecurrenceRules(filteredRecurrenceRules)
 
     const combinedAvailableSlots = [

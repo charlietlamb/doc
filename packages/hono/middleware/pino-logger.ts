@@ -3,6 +3,7 @@ import { pinoLogger as logger } from 'hono-pino'
 import pino from 'pino'
 import pretty from 'pino-pretty'
 import { env } from '@doc/env'
+
 export function pinoLogger(): MiddlewareHandler {
   return async (c, next) => {
     const loggerMiddleware = logger({

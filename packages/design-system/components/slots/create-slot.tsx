@@ -210,18 +210,13 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
         },
       })
     } catch (error) {
-      console.error('=== Form Submission Error ===')
-      console.error('Error details:', error)
-      if (error instanceof Error) {
-        console.error('Error name:', error.name)
-        console.error('Error message:', error.message)
-        console.error('Error stack:', error.stack)
-      }
       toast.error(
-        error instanceof Error ? error.message : 'Failed to create slots'
+        error instanceof Error ? error.message : 'Failed to create slots',
+        {
+          description: 'Check this does not overlap with current slots.',
+        }
       )
     } finally {
-      console.log('Form submission completed')
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
       })
@@ -247,21 +242,10 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(
-          (data) => {
-            console.log('Form submitted successfully', data)
-            return onSubmit(data)
-          },
-          (errors) => {
-            console.error('Form validation failed:', errors)
-            console.error('Current form values:', form.getValues())
-            console.error('Form state:', form.formState)
-            toast.error('Please check all required fields')
-          }
+          (data) => onSubmit(data),
+          () => toast.error('Please check all required fields')
         )}
         className="space-y-6"
-        onClick={(e) => {
-          console.log('Form clicked', e.target)
-        }}
       >
         <div className="grid grid-cols-2 gap-4">
           <TimePicker
