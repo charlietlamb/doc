@@ -28,11 +28,24 @@ import { QUERY_KEYS } from '../../lib/query-keys'
 import { useQueryClient } from '@tanstack/react-query'
 import { RECURRENCE_TYPES } from '../../lib/recurrence-types'
 
-const recurrenceSchema = z.object({
-  recurrenceType: z.enum(['once', 'daily', 'weekly']),
-  weekdays: z.number().int().min(0).max(127).optional(),
-  endDate: z.date().optional(),
-})
+const recurrenceSchema = z
+  .object({
+    recurrenceType: z.enum(['once', 'daily', 'weekly']),
+    weekdays: z.number().int().min(0).max(127).optional(),
+    endDate: z.date().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.recurrenceType !== RECURRENCE_TYPES.ONCE && !data.endDate) {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'End date is required for daily and weekly recurrences',
+      path: ['endDate'],
+    }
+  )
 
 interface FormData {
   date: Date
