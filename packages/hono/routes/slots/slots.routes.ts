@@ -76,10 +76,7 @@ export const createRecurringSlots = createRoute({
     [HttpStatusCodes.OK]: {
       content: {
         'application/json': {
-          schema: z.object({
-            rule: insertRecurrenceRuleSchema,
-            slotsCreated: z.number(),
-          }),
+          schema: insertRecurrenceRuleSchema,
         },
       },
       description: 'Recurring slots created successfully',
