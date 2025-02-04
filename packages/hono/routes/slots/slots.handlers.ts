@@ -36,16 +36,15 @@ function doesRecurrenceOverlap(
     endTime: Date
     weekdays: number
     endDate: Date | null
-  }
+    recurrenceType?: string
+  },
+  newSlotRecurrenceType?: string,
+  newSlotWeekdays?: number
 ): boolean {
   if (rule.endDate && slotStart > rule.endDate) {
     return false
   }
-  const slotWeekday = getWeekday(slotStart)
-  const weekdayMatches = (rule.weekdays & (1 << (slotWeekday - 1))) !== 0
-  if (!weekdayMatches) {
-    return false
-  }
+
   const ruleStartTime = new Date(slotStart)
   ruleStartTime.setHours(rule.startTime.getHours())
   ruleStartTime.setMinutes(rule.startTime.getMinutes())
@@ -54,13 +53,30 @@ function doesRecurrenceOverlap(
   ruleEndTime.setHours(rule.endTime.getHours())
   ruleEndTime.setMinutes(rule.endTime.getMinutes())
 
+  if (rule.recurrenceType === 'daily' || newSlotRecurrenceType === 'daily') {
+    return isOverlapping(slotStart, slotEnd, ruleStartTime, ruleEndTime)
+  }
+
+  if (
+    rule.recurrenceType === 'weekly' &&
+    newSlotRecurrenceType === 'weekly' &&
+    newSlotWeekdays !== undefined
+  ) {
+    const hasWeekdayOverlap = (rule.weekdays & newSlotWeekdays) !== 0
+    if (!hasWeekdayOverlap) {
+      return false
+    }
+  }
+
   return isOverlapping(slotStart, slotEnd, ruleStartTime, ruleEndTime)
 }
 
 async function checkSlotOverlap(
   doctorId: string,
   startTime: Date,
-  endTime: Date
+  endTime: Date,
+  recurrenceType?: string,
+  weekdays?: number
 ): Promise<boolean> {
   const overlappingSlots = await db
     .select()
@@ -96,7 +112,9 @@ async function checkSlotOverlap(
     )
 
   for (const rule of recurrenceRulesList) {
-    if (doesRecurrenceOverlap(startTime, endTime, rule)) {
+    if (
+      doesRecurrenceOverlap(startTime, endTime, rule, recurrenceType, weekdays)
+    ) {
       return true
     }
   }
@@ -107,11 +125,13 @@ async function checkSlotOverlap(
 export const create: AppRouteHandler<CreateSlotRoute> = async (c) => {
   const slot = await c.req.valid('json')
   try {
-    const hasOverlap = await checkSlotOverlap(
-      slot.doctorId,
-      new Date(slot.startTime),
-      new Date(slot.endTime)
-    )
+    const hasOverlap =
+      slot.status === 'available' &&
+      (await checkSlotOverlap(
+        slot.doctorId,
+        new Date(slot.startTime),
+        new Date(slot.endTime)
+      ))
     if (hasOverlap) {
       return c.json(
         { error: 'This time slot overlaps with existing slots' },
@@ -156,7 +176,13 @@ export const createRecurringSlots: AppRouteHandler<
   try {
     const startDate = new Date(data.startTime)
     const endDate = new Date(data.endTime)
-    const hasOverlap = await checkSlotOverlap(doctorId, startDate, endDate)
+    const hasOverlap = await checkSlotOverlap(
+      doctorId,
+      startDate,
+      endDate,
+      data.recurrenceType,
+      data.weekdays || 0
+    )
 
     if (hasOverlap) {
       return c.json(
