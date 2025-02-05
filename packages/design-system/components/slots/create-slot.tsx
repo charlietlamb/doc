@@ -223,12 +223,9 @@ export function CreateSlot({ onSuccess }: { onSuccess?: () => void }) {
         },
       })
     } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : 'Failed to create slots',
-        {
-          description: 'Check this does not overlap with current slots.',
-        }
-      )
+      toast.error('Failed to create slots', {
+        description: 'Check this does not overlap with current slots.',
+      })
     } finally {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.AVAILABLE_SLOTS, doctor?.id],
