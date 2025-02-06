@@ -36,7 +36,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${outfit.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${outfit.variable} antialiased flex flex-col h-screen`}
+      >
         <Providers doctors={doctorsWithDateObjects ?? []}>
           <Header />
           {children}

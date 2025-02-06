@@ -25,7 +25,7 @@ export function Doctors() {
   })
 
   return (
-    <section className="w-full p-6 container bg-background rounded-lg shadow-sm">
+    <section className="w-full p-6 container bg-background rounded-lg shadow-sm h-full flex-grow">
       <header className="flex flex-row justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-heading font-bold">Doctors</h1>
@@ -38,7 +38,7 @@ export function Doctors() {
         </CreateDoctorDialog>
       </header>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 flex-grow h-full">
         <div className="relative">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
@@ -49,7 +49,7 @@ export function Doctors() {
           />
         </div>
 
-        <ScrollArea className="h-[600px]">
+        <ScrollArea className="h-full">
           <ul className="grid gap-4">
             {filteredDoctors.map((doctor) => (
               <li
